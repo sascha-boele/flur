@@ -145,6 +145,13 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .shopdlg textarea::placeholder{color:var(--mute)}
 .shopdlg .acts button{font-size:calc(3.4*var(--u));padding:calc(2.6*var(--u)) calc(5*var(--u))}
 .shopdlg .save:disabled{background:var(--line);color:var(--mute)}
+.sldlg{width:calc(84*var(--u));max-height:88%;grid-template-rows:auto 1fr auto auto}
+.sl{list-style:none;margin:0;padding:0;overflow-y:auto;display:grid;gap:calc(1*var(--u));align-content:start;min-height:calc(20*var(--u))}
+.sl button{all:unset;box-sizing:border-box;width:100%;display:flex;gap:calc(2*var(--u));align-items:center;padding:calc(1.6*var(--u)) calc(2*var(--u));border-radius:calc(1.4*var(--u));background:#0b1433;font:500 calc(3.4*var(--u)) "Red Hat Text";cursor:pointer}
+.sl button::before{content:"";flex:none;width:calc(3.4*var(--u));height:calc(3.4*var(--u));border-radius:50%;border:calc(.35*var(--u)) solid var(--t)}
+.sl li.done button{color:var(--mute);text-decoration:line-through}
+.sl li.done button::before{background:var(--t)}
+.cal li.shopli time{color:var(--y)}
 /* Querformat: drei Spalten, gleiche Elementgröße wie hochkant */
 @media (orientation:landscape){
   :root{--u:calc(min(100vw/1.6667,100vh)/100)}
@@ -270,13 +277,21 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
       <div class="acts"><button type="button" class="del" id="padclr">Feld leeren</button><button type="button" id="shopx">Schließen</button><button class="save" id="addb" disabled>Hinzufügen</button></div>
     </form>
   </div>
+  <div class="modal" id="slmodal">
+    <div class="dlg sldlg">
+      <h3>Einkaufszettel <span style="font:500 calc(2.2*var(--u)) 'Red Hat Text';color:var(--mute)">· Gekauftes antippen</span></h3>
+      <ul class="sl" id="sllist"></ul>
+      <div class="ok" id="slok" aria-live="polite"></div>
+      <div class="acts"><button type="button" class="del" id="sladd" style="color:var(--t)">+ Artikel</button><button type="button" id="slx">Schließen</button><button class="save" id="slsave" disabled>Abgehakte entfernen</button></div>
+    </div>
+  </div>
 </main>
 
 <script>
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='26';
+const BUILD='27';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -332,9 +347,11 @@ const renderCal=()=>{const now=new Date(),t=iso(now),hm=pad(now.getHours())+':'+
     .sort((a,b)=>(a.show+(a.start||'00:00')).localeCompare(b.show+(b.start||'00:00')));
   const days=[...new Set([t,...list.map(e=>e.show)])];
   $('cal').innerHTML=(calErr?`<div class="empty stale">${esc(calErr)}</div>`:'')+days.map(d=>{const its=list.filter(e=>e.show===d);
-    return `<div class="day">${dayName(d)}</div>`+(its.length?`<ul>${its.map(e=>{const done=d===t&&e.end&&e.endDate===t&&e.end<=hm;
+    const sl=d===t&&shopList.length?`<li class="shopli"><button data-shop="1"><time>Liste</time><span>Einkaufszettel · ${shopList.length} Artikel</span></button></li>`:'';
+    return `<div class="day">${dayName(d)}</div>`+(its.length||sl?`<ul>${sl}${its.map(e=>{const done=d===t&&e.end&&e.endDate===t&&e.end<=hm;
       return `<li class="${done?'done':''}"><button data-id="${esc(e.id)}"><time>${e.start||'ganztags'}</time><span>${esc(e.title)}</span></button></li>`;}).join('')}</ul>`:'<div class="empty">Keine Termine</div>');}).join('');};
-async function loadCal(){try{evs=(await api({action:'list',days:21})).events;calErr='';}
+let shopList=[];
+async function loadCal(){try{const j=await api({action:'list',days:21});evs=j.events;shopList=j.shop||[];calErr='';}
   catch(e){calErr=CFG?'Kalender gerade nicht erreichbar':'Kalender nicht verbunden';}renderCal();}
 renderCal();loadCal();setInterval(loadCal,5*60000);setInterval(renderCal,60000);
 const kw=d=>{d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-n);
@@ -351,7 +368,7 @@ const closeDlg=()=>{$('modal').classList.remove('on');};
 const run=async(p)=>{if(busy)return;busy=true;$('evmsg').textContent='Wird gespeichert …';
   try{await api(p);closeDlg();await loadCal();}catch(e){$('evmsg').textContent='Hat nicht geklappt: '+e.message;}busy=false;};
 $('plus').addEventListener('click',()=>openDlg());
-$('cal').addEventListener('click',ev=>{const b=ev.target.closest('button[data-id]');if(b)openDlg(evs.find(x=>x.id===b.dataset.id));});
+$('cal').addEventListener('click',ev=>{if(ev.target.closest('button[data-shop]')){openShopList();return;}const b=ev.target.closest('button[data-id]');if(b)openDlg(evs.find(x=>x.id===b.dataset.id));});
 $('eva').addEventListener('change',syncAll);
 $('evs').addEventListener('change',()=>{const [h,m]=$('evs').value.split(':').map(Number);if($('eve').value<=$('evs').value)$('eve').value=pad(Math.min(23,h+1))+':'+pad(m);});
 $('evx').addEventListener('click',closeDlg);
@@ -462,7 +479,7 @@ new ResizeObserver(()=>{if($('shopmodal').classList.contains('on')){padSize();pa
 $('add').addEventListener('submit',e=>{e.preventDefault();if(!items.length)return;const lines=items.slice();
   ab.disabled=true;$('ok').textContent='Wird eingetragen …';
   api({action:'shop_add',items:lines.join('\n')}).then(()=>{const m='✓ '+lines.join(', ')+' steht auf dem Einkaufszettel';items=[];renderItems();$('ok').textContent=m;$('okcard').textContent=m;
-      setTimeout(shopClose,1200);clearTimeout(okT);okT=setTimeout(()=>{$('okcard').textContent='';},10000);})
+      setTimeout(shopClose,1200);loadCal();clearTimeout(okT);okT=setTimeout(()=>{$('okcard').textContent='';},10000);})
     .catch(()=>{$('ok').textContent='Hat nicht geklappt – bitte nochmal tippen';ab.disabled=false;});});
 
 // Kamera: Reolink-Rekorder im Heimnetz, Einzelbilder per Snap-Befehl (Zugang nur lokal gespeichert)
@@ -506,6 +523,18 @@ $('camf').addEventListener('submit',e=>{e.preventDefault();cam={ip:$('camip').va
   camStop=false;camProto=/^https:/i.test(cam.ip)?'https':'http';ls.set('flurcam',JSON.stringify(cam));camErr=0;$('cammodal').classList.remove('on');camMsg('Verbinde …');camTick();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)camTick();});
 camTick();
+
+// Einkaufszettel ansehen und abhaken
+let slDone=new Set();
+const slRender=()=>{$('sllist').innerHTML=shopList.length?shopList.map((t,i)=>`<li class="${slDone.has(i)?'done':''}"><button type="button" data-i="${i}">${esc(t)}</button></li>`).join(''):'<li class="empty">Der Einkaufszettel ist leer</li>';
+  $('slsave').disabled=!slDone.size;};
+function openShopList(){slDone=new Set();$('slok').textContent='';slRender();$('slmodal').classList.add('on');}
+$('sllist').addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(!b)return;const i=+b.dataset.i;slDone.has(i)?slDone.delete(i):slDone.add(i);slRender();});
+$('slx').addEventListener('click',()=>$('slmodal').classList.remove('on'));
+$('sladd').addEventListener('click',()=>{$('slmodal').classList.remove('on');$('shopopen').click();});
+$('slsave').addEventListener('click',async()=>{const keep=shopList.filter((t,i)=>!slDone.has(i));$('slsave').disabled=true;$('slok').textContent='Wird gespeichert …';
+  try{await api({action:'shop_set',items:keep.join('\n')});shopList=keep;slDone=new Set();slRender();renderCal();$('slok').textContent='✓ Gespeichert';}
+  catch(e){$('slok').textContent='Hat nicht geklappt – bitte nochmal';$('slsave').disabled=false;}});
 }
 </script>
 </body>
