@@ -380,7 +380,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
       <div class="ptools" id="ptools">
         <span class="pcols" id="pcols"></span>
         <span class="psizes" id="psizes"></span>
-        <button type="button" class="ptool" id="perase">Radierer</button>
+        <button type="button" class="ptool" id="pfill">Füllen</button><button type="button" class="ptool" id="perase">Radierer</button><button type="button" class="ptool" id="pundo">Rückgängig</button>
       </div>
       <div class="pwrap"><canvas id="pcanvas"></canvas></div>
       <div class="acts"><button type="button" class="del" id="pnew">Neues Bild</button><button type="button" id="px">Schließen</button><button type="button" class="save" id="psave">Speichern</button></div>
@@ -392,7 +392,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='44';
+const BUILD='45';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -658,22 +658,49 @@ const PCOLS=['#1b1f2e','#e8452c','#f28c28','#f7e463','#2fa84f','#3b4fd8','#8e44c
 $('pcols').innerHTML=PCOLS.map((c,i)=>`<button type="button" data-c="${c}" style="background:${c}" class="${i?'':'on'}" aria-label="Farbe"></button>`).join('');
 $('psizes').innerHTML=[3,6,14].map((w,i)=>`<button type="button" data-w="${w}" class="${i===1?'on':''}" aria-label="Stiftgröße"><i style="width:${w+2}px;height:${w+2}px"></i></button>`).join('');
 const pSel=(box,el)=>{[...box.children].forEach(b=>b.classList.toggle('on',b===el));};
-$('pcols').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;pCol=b.dataset.c;pErase=false;$('perase').classList.remove('on');pSel($('pcols'),b);});
+let pFill=false,pStroke=null,pSnap=null,pHold=null,pUndo=[];
+const pMode=m=>{pErase=m==='erase';pFill=m==='fill';$('perase').classList.toggle('on',pErase);$('pfill').classList.toggle('on',pFill);};
+$('pcols').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;pCol=b.dataset.c;if(pErase)pMode('');pSel($('pcols'),b);});
 $('psizes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;pSize=+b.dataset.w;pSel($('psizes'),b);});
-$('perase').addEventListener('click',()=>{pErase=!pErase;$('perase').classList.toggle('on',pErase);});
-const pFit=keep=>{const r=pc.getBoundingClientRect(),d=devicePixelRatio||1;let old=null;if(keep&&pc.width){old=document.createElement('canvas');old.width=pc.width;old.height=pc.height;old.getContext('2d').drawImage(pc,0,0);}
-  pc.width=r.width*d;pc.height=r.height*d;px.setTransform(d,0,0,d,0,0);px.fillStyle='#fff';px.fillRect(0,0,r.width,r.height);if(old)px.drawImage(old,0,0,r.width,r.height);};
-const pLoad=()=>{const u=ls.get('flurpaint');if(!u)return;const im=new Image();im.onload=()=>{const r=pc.getBoundingClientRect();px.drawImage(im,0,0,r.width,r.height);};im.src=u;};
-const pPos=e=>{const r=pc.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
-pc.addEventListener('pointerdown',e=>{e.preventDefault();pc.setPointerCapture(e.pointerId);const [x,y]=pPos(e);pDraw={x,y};
-  px.beginPath();px.arc(x,y,(pErase?pSize*3:pSize)/2*(e.pressure||.5)*1.6,0,Math.PI*2);px.fillStyle=pErase?'#fff':pCol;px.fill();});
-pc.addEventListener('pointermove',e=>{if(!pDraw)return;const [x,y]=pPos(e);const w=(pErase?pSize*3:pSize)*((e.pointerType==='pen'&&e.pressure)?(.4+e.pressure*1.2):1);
-  px.strokeStyle=pErase?'#fff':pCol;px.lineWidth=w;px.lineCap='round';px.lineJoin='round';px.beginPath();px.moveTo(pDraw.x,pDraw.y);px.lineTo(x,y);px.stroke();pDraw={x,y};});
-const pUp=()=>{pDraw=null;};pc.addEventListener('pointerup',pUp);pc.addEventListener('pointercancel',pUp);
+$('perase').addEventListener('click',()=>pMode(pErase?'':'erase'));
+$('pfill').addEventListener('click',()=>pMode(pFill?'':'fill'));
+const pPush=()=>{pUndo.push(px.getImageData(0,0,pc.width,pc.height));if(pUndo.length>15)pUndo.shift();};
+$('pundo').addEventListener('click',()=>{const im=pUndo.pop();if(im)px.putImageData(im,0,0);});
+// Fläche füllen (Scanline-Flutfüllung auf Pixelebene)
+function pFloodFill(cx,cy,hex){const d=devicePixelRatio||1,W=pc.width,H=pc.height,x0=Math.floor(cx*d),y0=Math.floor(cy*d);if(x0<0||y0<0||x0>=W||y0>=H)return;
+  const img=px.getImageData(0,0,W,H),p=new Uint32Array(img.data.buffer);const n=parseInt(hex.slice(1),16);
+  const fill=((255<<24)|((n&255)<<16)|(n&0xff00)|((n>>16)&255))>>>0;const t=p[y0*W+x0];if(Math.abs((t&255)-((n>>16)&255))+Math.abs(((t>>8)&255)-((n>>8)&255))+Math.abs(((t>>16)&255)-(n&255))<=60)return;
+  const tr=t&255,tg=(t>>8)&255,tb=(t>>16)&255,tol=60;
+  const same=i=>{const c=p[i];return Math.abs((c&255)-tr)+Math.abs(((c>>8)&255)-tg)+Math.abs(((c>>16)&255)-tb)<=tol;};
+  const st=[[x0,y0]];while(st.length){let [x,y]=st.pop();let i=y*W+x;while(x>=0&&same(i)){x--;i--;}x++;i++;let up=false,dn=false;
+    while(x<W&&same(i)){p[i]=fill;if(y>0){const u=same(i-W);if(u&&!up){st.push([x,y-1]);up=true;}else if(!u)up=false;}
+      if(y<H-1){const v=same(i+W);if(v&&!dn){st.push([x,y+1]);dn=true;}else if(!v)dn=false;}x++;i++;}}
+  px.putImageData(img,0,0);}
+// Formerkennung: Linie oder Kreis/Ellipse, wenn man am Ende kurz stillhält
+function pShape(pts){if(pts.length<6)return null;const a=pts[0],b=pts[pts.length-1];let len=0;for(let i=1;i<pts.length;i++)len+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
+  const ab=Math.hypot(b[0]-a[0],b[1]-a[1]);
+  if(ab>25&&len<ab*1.25){let dev=0;for(const q of pts){const d=Math.abs((b[1]-a[1])*q[0]-(b[0]-a[0])*q[1]+b[0]*a[1]-b[1]*a[0])/ab;if(d>dev)dev=d;}if(dev<Math.max(8,ab*.08))return {t:'line',a,b};}
+  if(len>80&&ab<len*.22){let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const q of pts){x1=Math.min(x1,q[0]);y1=Math.min(y1,q[1]);x2=Math.max(x2,q[0]);y2=Math.max(y2,q[1]);}
+    let rx=(x2-x1)/2,ry=(y2-y1)/2;if(Math.abs(rx-ry)<Math.max(rx,ry)*.18){const r=(rx+ry)/2;rx=ry=r;}return {t:'ell',cx:(x1+x2)/2,cy:(y1+y2)/2,rx,ry};}
+  return null;}
+function pDrawShape(sh,w){px.putImageData(pSnap,0,0);px.strokeStyle=pErase?'#fff':pCol;px.lineWidth=w;px.lineCap='round';px.beginPath();
+  if(sh.t==='line'){px.moveTo(sh.a[0],sh.a[1]);px.lineTo(sh.b[0],sh.b[1]);}else px.ellipse(sh.cx,sh.cy,Math.max(1,sh.rx),Math.max(1,sh.ry),0,0,Math.PI*2);px.stroke();}
+pc.addEventListener('pointerdown',e=>{e.preventDefault();pc.setPointerCapture(e.pointerId);const [x,y]=pPos(e);pPush();
+  if(pFill){pFloodFill(x,y,pCol);return;}
+  pSnap=px.getImageData(0,0,pc.width,pc.height);pStroke={pts:[[x,y]],shape:null,w:pErase?pSize*3:pSize};pDraw={x,y};
+  px.beginPath();px.arc(x,y,pStroke.w/2,0,Math.PI*2);px.fillStyle=pErase?'#fff':pCol;px.fill();});
+pc.addEventListener('pointermove',e=>{if(!pDraw||!pStroke)return;const [x,y]=pPos(e);
+  if(pStroke.shape){const sh=pStroke.shape;if(sh.t==='line')sh.b=[x,y];else{const k=Math.hypot(x-sh.cx,y-sh.cy)/Math.max(1,Math.hypot(pStroke.anchor[0]-sh.cx,pStroke.anchor[1]-sh.cy));sh.rx=pStroke.r0[0]*k;sh.ry=pStroke.r0[1]*k;}pDrawShape(sh,pStroke.w);return;}
+  const w=pStroke.w*((e.pointerType==='pen'&&e.pressure)?(.4+e.pressure*1.2):1);
+  px.strokeStyle=pErase?'#fff':pCol;px.lineWidth=w;px.lineCap='round';px.lineJoin='round';px.beginPath();px.moveTo(pDraw.x,pDraw.y);px.lineTo(x,y);px.stroke();
+  if(Math.hypot(x-pDraw.x,y-pDraw.y)>2){clearTimeout(pHold);pHold=setTimeout(()=>{if(!pStroke||pStroke.shape)return;const sh=pShape(pStroke.pts);if(!sh)return;
+    pStroke.shape=sh;const last=pStroke.pts[pStroke.pts.length-1];pStroke.anchor=last;if(sh.t==='ell')pStroke.r0=[sh.rx,sh.ry];pDrawShape(sh,pStroke.w);},550);}
+  pStroke.pts.push([x,y]);pDraw={x,y};});
+const pUp=()=>{clearTimeout(pHold);pDraw=null;pStroke=null;};pc.addEventListener('pointerup',pUp);pc.addEventListener('pointercancel',pUp);
 const pThumb=()=>{const u=ls.get('flurpaint'),b=$('paintopen');b.classList.toggle('hasimg',!!u);b.style.backgroundImage=u?'url("'+u+'")':'';};
 $('paintopen').addEventListener('click',()=>{$('paintmodal').classList.add('on');requestAnimationFrame(()=>{pFit(false);pLoad();});});
 $('px').addEventListener('click',()=>$('paintmodal').classList.remove('on'));
-$('pnew').addEventListener('click',()=>pFit(false));
+$('pnew').addEventListener('click',()=>{pPush();pFit(false);});
 $('psave').addEventListener('click',()=>{const r=pc.getBoundingClientRect(),sc=Math.min(1,1000/r.width),o=document.createElement('canvas');
   o.width=Math.round(r.width*sc);o.height=Math.round(r.height*sc);o.getContext('2d').drawImage(pc,0,0,o.width,o.height);
   ls.set('flurpaint',o.toDataURL('image/jpeg',.85));pThumb();$('paintmodal').classList.remove('on');});
