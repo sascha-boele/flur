@@ -221,7 +221,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='15';
+const BUILD='16';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -392,7 +392,7 @@ try{cam=JSON.parse(ls.get('flurcam')||'null');}catch(e){}
 if(cam&&/^https:/i.test(cam.ip||''))camProto='https';
 let camProto='http';
 const camHost=()=>String(cam.ip||'').trim().replace(/^[a-z]+:\/\//i,'').replace(/\/.*$/,'');
-const camUrl=()=>camProto+'://'+camHost()+'/cgi-bin/api.cgi?'+new URLSearchParams({cmd:'Snap',channel:String((+cam.ch||1)-1),rs:String(Date.now()),user:cam.user,password:cam.pw,width:'1280',height:'720'});
+const camUrl=()=>camProto+'://'+camHost()+'/cgi-bin/api.cgi?'+new URLSearchParams({cmd:'Snap',channel:String((+cam.ch||1)-1),rs:String(Date.now()),user:cam.user,password:cam.pw});
 const camMsg=t=>{$('cammsg').textContent=t;$('cammsg').hidden=!t;};
 function camProbe(){ // Diagnose: ist der Rekorder überhaupt erreichbar? (Logo der Weboberfläche)
   const res={};let n=0;['http','https'].forEach(p=>{const i=new Image();const to=setTimeout(()=>{i.src='';fin(p,'keine Antwort');},8000);
