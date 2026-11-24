@@ -305,6 +305,7 @@ html,body{background:#e3d8c6}
 /* Kopf als feste Tabelle: Zeile 1 = Uhr | Strich | Wetter, Zeile 2 = Datum | Strich | Wetterlage – Zeile 2 immer auf gleicher Grundlinie */
 .top{display:grid!important;grid-template-columns:auto 2px auto!important;grid-template-rows:auto auto;justify-content:space-between;align-items:end;row-gap:calc(1*var(--u))}
 .tl,.tr{display:contents!important}
+.top .clock,.top .trow,.top .date,.top .cond{justify-self:start;width:max-content}
 .top .clock{grid-column:1;grid-row:1;align-self:end}
 .top .trow{grid-column:3;grid-row:1;align-self:end}
 .top .vsep{grid-column:2;grid-row:1/3;align-self:stretch}
@@ -458,7 +459,7 @@ html,body{background:#e3d8c6}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='57';
+const BUILD='58';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
