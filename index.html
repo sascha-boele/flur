@@ -154,8 +154,8 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .cal li.shopli time{color:var(--y)}
 
 /* Kopf neu: Uhr | Symbol + Temperatur gleich groß, darunter Datum (auf Uhrbreite) | Wetterlage + Ort gleich groß */
-.top{grid-template-columns:auto auto;justify-content:start;align-items:stretch;column-gap:calc(3*var(--u))}
-.tr{border-left:2px solid var(--line);padding-left:calc(3*var(--u))}
+.top{grid-template-columns:auto 2px auto;justify-content:space-between;align-items:stretch;column-gap:calc(2*var(--u))}
+.vsep{background:var(--sand);border-radius:2px;margin:calc(.6*var(--u)) 0;opacity:.7}
 .tl,.tr{min-width:0}
 .trow{display:flex;align-items:center;gap:calc(1.5*var(--u))}
 .top .temp{font:800 calc(13*var(--u))/.9 "Red Hat Display",sans-serif;letter-spacing:-.03em}
@@ -266,6 +266,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
       <div class="clock num" id="clock">13:59</div>
       <div class="date" id="date">Dienstag, 24. November</div>
     </div>
+    <div class="vsep" aria-hidden="true"></div>
     <div class="tr">
       <div class="trow"><span id="wi" class="wicon"></span><div class="temp num" id="wt">–°</div></div>
       <div class="cond"><span id="wc">Wetter wird geladen …</span> · <span id="wloc">Lingen</span></div>
@@ -384,7 +385,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='41';
+const BUILD='42';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -394,7 +395,7 @@ const tick=()=>{const d=new Date();$('clock').textContent=pad(d.getHours())+':'+
 function fitHead(){const c=$('clock'),d=$('date');d.style.fontSize='';const cw=c.getBoundingClientRect().width,dw=d.getBoundingClientRect().width;
   if(cw&&dw){const fs=parseFloat(getComputedStyle(d).fontSize)*cw/dw;d.style.fontSize=fs+'px';const cd=$('wc').parentNode;cd.style.fontSize=fs+'px';
     const top=document.querySelector('.top'),tr=document.querySelector('.tr'),cs=getComputedStyle(tr);
-    const avail=top.clientWidth-document.querySelector('.tl').getBoundingClientRect().width-parseFloat(getComputedStyle(top).columnGap||0)-parseFloat(cs.paddingLeft)-parseFloat(cs.borderLeftWidth)-4;
+    const avail=top.clientWidth-document.querySelector('.tl').getBoundingClientRect().width-2*parseFloat(getComputedStyle(top).columnGap||0)-2-6;
     const cw2=cd.scrollWidth;if(cw2>avail&&avail>0)cd.style.fontSize=(fs*avail/cw2)+'px';}}
 tick();setInterval(tick,10000);addEventListener('resize',()=>setTimeout(fitHead,100));(document.fonts?document.fonts.ready:Promise.resolve()).then(fitHead);
 
