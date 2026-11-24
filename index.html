@@ -16,6 +16,7 @@
    LAYOUT: Hochformat 1200×2000 (0,6), in cqw skaliert; 1|2, 3, 4|5, 6 nach Skizze */
 :root{color-scheme:dark;--bg:#0b1433;--card:#121d45;--line:#22306a;--ink:#eef1fb;--mute:#8d97c4;--b:#3b4fd8;--t:#4fc1c6;--y:#f7e463;--r:#e8452c;--sp:#1ed760}
 *{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
 html,body{margin:0;height:100%;background:#050a1c}
 body{display:grid;place-items:center;font-family:"Red Hat Text",system-ui,sans-serif;color:var(--ink);overflow:hidden}
 .screen{width:min(100vw,calc(100vh*0.6));aspect-ratio:.6;container-type:inline-size;background:var(--bg);display:grid;grid-template-rows:auto auto 1fr auto auto;gap:2.2cqw;padding:3.4cqw;overflow:hidden}
@@ -67,7 +68,9 @@ input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
 /* 4 Spotify */
 .sp{display:grid;grid-template-rows:auto auto auto;gap:1.4cqw}
 .sp .row{display:grid;grid-template-columns:11cqw 1fr;gap:2cqw;align-items:center}
-.cover{width:11cqw;aspect-ratio:1;border-radius:1.4cqw;background:conic-gradient(from 210deg,#1ed760,#0b6b3a,#4fc1c6,#1ed760)}
+.cover{width:11cqw;aspect-ratio:1;border-radius:1.4cqw;background:var(--line) center/cover no-repeat}
+.spcon{font:700 2.8cqw "Red Hat Display";border:0;border-radius:5cqw;padding:2.2cqw 3cqw;background:var(--sp);color:#06200f;cursor:pointer;justify-self:center}
+.sp.off .ctl,.sp.off .bar,.sp.off .times{opacity:.35;pointer-events:none}
 .title{font:700 2.9cqw/1.15 "Red Hat Display";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .artist{font-size:2.2cqw;color:var(--mute);margin-top:.4cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar{height:.8cqw;background:var(--line);border-radius:1cqw}
@@ -165,21 +168,22 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 
   <div class="two">
     <section class="card sp">
-      <h2 style="margin:0">Spotify <span>Wohnzimmer</span></h2>
+      <h2 style="margin:0">Spotify <span id="spdev"></span></h2>
       <div class="row">
-        <div class="cover" aria-hidden="true"></div>
+        <div class="cover" id="spcov" aria-hidden="true"></div>
         <div>
-          <div class="title">Titel des laufenden Songs</div>
-          <div class="artist">Interpret</div>
-          <div class="bar" style="margin-top:1.2cqw"><i id="prog"></i></div>
-          <div class="times num"><span id="pos">1:24</span><span>3:41</span></div>
+          <div class="title" id="sptitle">Spotify wird geladen …</div>
+          <div class="artist" id="spart">&nbsp;</div>
+          <div class="bar" style="margin-top:1.2cqw"><i id="prog" style="width:0"></i></div>
+          <div class="times num"><span id="pos">0:00</span><span id="dur">0:00</span></div>
         </div>
       </div>
-      <div class="ctl">
-        <button aria-label="Zurück"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
-        <button class="play" id="play" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor" id="pi"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
-        <button aria-label="Weiter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <div class="ctl" id="spctl">
+        <button id="spprev" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+        <button class="play" id="play" aria-label="Abspielen"><svg viewBox="0 0 24 24" fill="currentColor" id="pi"><path d="M7 4v16l13-8z"/></svg></button>
+        <button id="spnext" aria-label="Weiter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
       </div>
+      <button class="spcon" id="spcon" hidden>Spotify verbinden</button>
     </section>
     <section class="card cal">
       <h2>Familienkalender <span style="display:flex;gap:1.6cqw;align-items:center"><span id="kw">KW 48</span><button class="plus" id="plus" aria-label="Termin hinzufügen">+</button></span></h2>
@@ -192,7 +196,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
     <form id="add"><textarea id="item" placeholder="Mit dem Stift hineinschreiben – eine Zeile pro Artikel" aria-label="Einkaufszettel"></textarea><button id="addb" disabled>Hinzu&shy;fügen</button></form>
     <div class="ok" id="ok" aria-live="polite"></div>
   </section>
-  <p class="note">Kamera und Spotify noch mit Beispielbild – Anbindung folgt</p>
+  <p class="note">Kamera noch mit Beispielbild – Anbindung folgt</p>
   <div class="modal" id="modal">
     <form class="dlg" id="evf">
       <h3 id="evh">Neuer Termin</h3>
@@ -210,7 +214,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='7';
+const BUILD='8';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -319,10 +323,49 @@ loadRadarTime();setInterval(loadRadarTime,5*60000);
 $('rng').addEventListener('input',e=>{setT(+e.target.value);clearTimeout(idle);
   idle=setTimeout(()=>{$('rng').value=0;setT(0);},120000);});
 
-let on=true,p=84;
-$('play').addEventListener('click',()=>{on=!on;$('play').setAttribute('aria-label',on?'Pause':'Abspielen');
-  $('pi').innerHTML=on?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M7 4v16l13-8z"/>';});
-setInterval(()=>{if(!on)return;p=(p+1)%221;$('pos').textContent=Math.floor(p/60)+':'+pad(p%60);$('prog').style.width=(p/221*100)+'%';},1000);
+// Spotify: Web API mit PKCE direkt im Browser (Client-ID ist nicht geheim)
+const SP_ID='b59dabb0466949daa8c592fe46b10321',SP_RED=location.origin+'/flur/';
+const SP_SCOPE='user-read-playback-state user-modify-playback-state user-read-currently-playing';
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
+const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+let spTok=null,spExp=0,sp={on:false,pos:0,dur:0,t:0,id:null},spT;
+const mmss=ms=>{const s=Math.max(0,Math.floor(ms/1000));return Math.floor(s/60)+':'+pad(s%60);};
+async function spLogin(){const v=b64u(crypto.getRandomValues(new Uint8Array(48)));ls.set('spver',v);
+  const ch=b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
+  location.href='https://accounts.spotify.com/authorize?'+new URLSearchParams({client_id:SP_ID,response_type:'code',redirect_uri:SP_RED,scope:SP_SCOPE,code_challenge_method:'S256',code_challenge:ch});}
+async function spToken(body){const r=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:SP_ID,...body})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error||'token');spTok=j.access_token;spExp=Date.now()+(j.expires_in-60)*1000;if(j.refresh_token)ls.set('sprt',j.refresh_token);}
+async function spAuth(){if(spTok&&Date.now()<spExp)return spTok;const rt=ls.get('sprt');if(!rt)return null;
+  try{await spToken({grant_type:'refresh_token',refresh_token:rt});return spTok;}catch(e){if(String(e.message).includes('invalid_grant'))ls.set('sprt',null);return null;}}
+async function spApi(path,method='GET'){const t=await spAuth();if(!t)throw new Error('login');
+  const r=await fetch('https://api.spotify.com/v1'+path,{method,headers:{Authorization:'Bearer '+t}});if(r.status===204)return null;
+  if(r.status===401){spTok=null;throw new Error('auth');}return r.headers.get('content-type')?.includes('json')?r.json():null;}
+const spShow=()=>{const el=sp.on?Math.min(sp.dur,sp.pos+Date.now()-sp.t):sp.pos;$('pos').textContent=mmss(el);$('dur').textContent=mmss(sp.dur);
+  $('prog').style.width=(sp.dur?el/sp.dur*100:0)+'%';};
+const spIcon=()=>{$('play').setAttribute('aria-label',sp.on?'Pause':'Abspielen');$('pi').innerHTML=sp.on?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M7 4v16l13-8z"/>';};
+const spOff=(msg,con)=>{$('sptitle').textContent=msg;$('spart').innerHTML='&nbsp;';$('spdev').textContent='';$('spcov').style.backgroundImage='';
+  document.querySelector('.sp').classList.add('off');$('spcon').hidden=!con;$('spctl').hidden=!!con;sp={on:false,pos:0,dur:0,t:0,id:null};spIcon();spShow();};
+async function spPoll(){clearTimeout(spT);let next=10000;
+  try{const p=await spApi('/me/player?additional_types=episode');
+    if(!p||!p.item){spOff('Gerade läuft nichts',false);}
+    else{const it=p.item;document.querySelector('.sp').classList.remove('off');$('spcon').hidden=true;$('spctl').hidden=false;
+      $('sptitle').textContent=it.name;$('spart').textContent=(it.artists||[]).map(a=>a.name).join(', ')||(it.show&&it.show.name)||'';
+      $('spdev').textContent=p.device?p.device.name:'';const img=((it.album||it).images||[])[0];
+      if(sp.id!==it.id)$('spcov').style.backgroundImage=img?'url("'+img.url.replace(/"/g,'')+'")':'';
+      sp={on:p.is_playing,pos:p.progress_ms||0,dur:it.duration_ms||0,t:Date.now(),id:it.id};spIcon();spShow();next=p.is_playing?5000:10000;}}
+  catch(e){if(e.message==='login'){spOff('Nicht verbunden',true);next=60000;}else{next=30000;}}
+  spT=setTimeout(spPoll,next);}
+const spCmd=async(path,method)=>{try{await spApi(path,method);}catch(e){}setTimeout(spPoll,600);};
+$('play').addEventListener('click',()=>{sp.on?spCmd('/me/player/pause','PUT'):spCmd('/me/player/play','PUT');sp.on=!sp.on;spIcon();});
+$('spnext').addEventListener('click',()=>spCmd('/me/player/next','POST'));
+$('spprev').addEventListener('click',()=>spCmd('/me/player/previous','POST'));
+$('spcon').addEventListener('click',spLogin);
+setInterval(()=>{if(sp.on)spShow();},1000);
+(async()=>{const q=new URLSearchParams(location.search),code=q.get('code');
+  if(code&&ls.get('spver')){try{await spToken({grant_type:'authorization_code',code,redirect_uri:SP_RED,code_verifier:ls.get('spver')});}catch(e){}
+    ls.set('spver',null);q.delete('code');q.delete('state');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:''));}
+  spPoll();})();
+
 
 const ta=$('item'),ab=$('addb');let okT;
 ta.addEventListener('input',()=>{ab.disabled=!ta.value.trim();});
