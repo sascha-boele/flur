@@ -222,7 +222,10 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .wicon svg{width:calc(8.5*var(--u));height:calc(8.5*var(--u))}
   .radar{grid-template-rows:minmax(0,1fr) auto auto auto}
   .rainbox .hours{min-height:0;height:auto}
-  .rainbox .hc{height:auto;grid-template-rows:auto calc(7*var(--u)) auto auto}
+  .rainbox .hc{height:auto;grid-template-rows:auto calc(4.5*var(--u)) auto;gap:calc(.3*var(--u))}
+  .rainbox .hc em{display:none}
+  .rainhd{margin:calc(.4*var(--u)) 0}
+  .slider{padding-top:calc(.4*var(--u));padding-bottom:calc(.6*var(--u))}
   .rainbox{padding-bottom:calc(1*var(--u))}
   .sp{grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center}
   .sp h2{grid-column:1/-1}
@@ -362,7 +365,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='37';
+const BUILD='39';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -381,13 +384,19 @@ const LAT=52.523,LON=7.316;
 const WTXT={0:'Klar',1:'Überwiegend klar',2:'Teils bewölkt',3:'Bedeckt',45:'Nebel',48:'Reifnebel',51:'Leichter Niesel',53:'Niesel',55:'Starker Niesel',56:'Gefrierender Niesel',57:'Gefrierender Niesel',
   61:'Leichter Regen',63:'Regen',65:'Starker Regen',66:'Gefrierender Regen',67:'Gefrierender Regen',71:'Leichter Schneefall',73:'Schneefall',75:'Starker Schneefall',77:'Schneegriesel',
   80:'Regenschauer',81:'Regenschauer',82:'Starke Schauer',85:'Schneeschauer',86:'Schneeschauer',95:'Gewitter',96:'Gewitter mit Hagel',99:'Gewitter mit Hagel'};
+const moonPhase=(d=new Date())=>{const p=((d-Date.UTC(2000,0,6,18,14))/864e5/29.530588853)%1;return p<0?p+1:p;};
+const moonName=p=>p<.03||p>.97?'Neumond':p<.22?'zunehmende Sichel':p<.28?'zunehmender Halbmond':p<.47?'zunehmender Mond':p<.53?'Vollmond':p<.72?'abnehmender Mond':p<.78?'abnehmender Halbmond':'abnehmende Sichel';
+const moonSvg=(cx,cy,r)=>{const p=moonPhase(),rx=Math.abs(r*Math.cos(2*Math.PI*p));let path;
+  if(p<.5){const sw=p<.25?0:1;path=`M${cx} ${cy-r}A${r} ${r} 0 0 1 ${cx} ${cy+r}A${rx} ${r} 0 0 ${sw} ${cx} ${cy-r}Z`;}
+  else{const sw=p>.75?1:0;path=`M${cx} ${cy-r}A${r} ${r} 0 0 0 ${cx} ${cy+r}A${rx} ${r} 0 0 ${sw} ${cx} ${cy-r}Z`;}
+  return `<g class="mn"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#2a3566"/><path d="${path}" fill="#e8ecfa"/></g>`;};
 const icon=(c,day)=>{
   const rays=(cx,cy,r1,r2,big)=>`<g class="rays${big?' big':''}">${[0,45,90,135,180,225,270,315].map(a=>{const t=a*Math.PI/180;return `<line x1="${cx+r1*Math.cos(t)}" y1="${cy+r1*Math.sin(t)}" x2="${cx+r2*Math.cos(t)}" y2="${cy+r2*Math.sin(t)}" stroke="#f7e463" stroke-width="3" stroke-linecap="round"/>`}).join('')}</g>`;
-  const sun=day?rays(24,22,14,18)+'<circle cx="24" cy="22" r="10" fill="#f7e463"/>':'<path class="mn" d="M30 8a14 14 0 1 0 11 23 12 12 0 0 1-11-23z" fill="#dfe5f7"/>';
+  const sun=day?rays(24,22,14,18)+'<circle cx="24" cy="22" r="10" fill="#f7e463"/>':moonSvg(25,21,12);
   const cloud=(f='#dfe5f7')=>`<path class="cl" d="M20 46h28a10 10 0 0 0 0-20 14 14 0 0 0-27 3 9 9 0 0 0-1 17z" fill="${f}"/>`;
   const drops='<g><path class="dp" d="M26 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/><path class="dp" d="M36 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/><path class="dp" d="M46 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/></g>';
   const flakes='<g fill="#fff"><circle class="fk" cx="25" cy="54" r="2.5"/><circle class="fk" cx="35" cy="57" r="2.5"/><circle class="fk" cx="45" cy="54" r="2.5"/></g>';
-  let b;if(c===0)b=day?rays(32,32,19,25,true)+'<circle cx="32" cy="32" r="14" fill="#f7e463"/>':'<path class="mn" d="M36 12a20 20 0 1 0 16 32 17 17 0 0 1-16-32z" fill="#dfe5f7"/>';
+  let b;if(c===0)b=day?rays(32,32,19,25,true)+'<circle cx="32" cy="32" r="14" fill="#f7e463"/>':moonSvg(32,32,20);
   else if(c<=2)b=sun+cloud();else if(c===3)b=cloud('#aab4d6');
   else if(c<=48)b='<g><path class="fg" d="M12 28h40" stroke="#aab4d6" stroke-width="4" stroke-linecap="round"/><path class="fg" d="M8 36h48" stroke="#aab4d6" stroke-width="4" stroke-linecap="round"/><path class="fg" d="M14 44h36" stroke="#aab4d6" stroke-width="4" stroke-linecap="round"/></g>';
   else if(c>=71&&c<=77||c===85||c===86)b=cloud()+flakes;
@@ -398,7 +407,7 @@ async function loadWeather(){try{
   const u=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,precipitation&daily=temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin&forecast_days=2`;
   const w=await (await fetch(u)).json();const c=w.current;
   $('wt').textContent=Math.round(c.temperature_2m)+'°';
-  $('wc').textContent=(WTXT[c.weather_code]||'')+' · '+Math.round(w.daily.temperature_2m_min[0])+'° / '+Math.round(w.daily.temperature_2m_max[0])+'°';
+  $('wc').textContent=(WTXT[c.weather_code]||'')+(c.is_day?'':' · '+moonName(moonPhase()))+' · '+Math.round(w.daily.temperature_2m_min[0])+'° / '+Math.round(w.daily.temperature_2m_max[0])+'°';
   $('wi').innerHTML=icon(c.weather_code,c.is_day);
   const h=w.hourly,now=new Date(),key=iso(now)+'T'+pad(now.getHours())+':00';
   let i=h.time.indexOf(key);if(i<0)i=0;i+=1;
