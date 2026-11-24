@@ -69,13 +69,35 @@ input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
 .ctl button.play{background:var(--sp);color:#06200f;width:10.5cqw;height:10.5cqw}
 .ctl svg{width:42%;height:42%}
 /* 5 Kalender */
-.cal ul{list-style:none;margin:0;padding:0;display:grid;gap:.7cqw}
-.cal li{display:grid;grid-template-columns:11cqw 1fr;gap:1.4cqw;align-items:baseline;font-size:2.4cqw}
+.cal{display:grid;grid-template-rows:auto 1fr;padding-bottom:0}
+.cal h2{margin-bottom:1cqw}
+.plus{width:6cqw;height:6cqw;border-radius:50%;border:0;background:var(--t);color:#062226;font:700 4cqw/1 "Red Hat Display";cursor:pointer;display:grid;place-items:center}
+.calscroll{height:27cqw;overflow-y:auto;overscroll-behavior:contain;padding-bottom:2cqw;scrollbar-width:none;-webkit-mask:linear-gradient(#000 85%,transparent)}
+.calscroll::-webkit-scrollbar{display:none}
+.cal ul{list-style:none;margin:0;padding:0;display:grid;gap:.3cqw}
+.cal li button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:11cqw 1fr;gap:1.4cqw;align-items:baseline;font-size:2.4cqw;padding:.5cqw .6cqw;border-radius:1cqw;cursor:pointer}
+.cal li button:active{background:var(--line)}
 .cal li time{font:700 2.4cqw "Red Hat Display";color:var(--t);white-space:nowrap}
-.cal li.done{color:var(--mute);text-decoration:line-through}
+.cal li.done button{color:var(--mute);text-decoration:line-through}
 .cal li.done time{color:var(--mute)}
-.cal .day{font:600 2cqw "Red Hat Text";color:var(--mute);margin:1.2cqw 0 .5cqw}
-.cal .day:first-of-type{margin-top:0}
+.cal .day{font:600 2cqw "Red Hat Text";color:var(--mute);margin:1.4cqw 0 .3cqw;position:sticky;top:0;background:var(--card);padding:.4cqw 0}
+.cal .day:first-child{margin-top:0}
+.cal .empty{font-size:2.2cqw;color:var(--mute);padding:.4cqw .6cqw}
+/* Termin-Fenster */
+.screen{position:relative}
+.modal{position:absolute;inset:0;background:rgba(5,10,28,.72);display:none;place-items:center;z-index:9}
+.modal.on{display:grid}
+.dlg{width:80cqw;background:var(--card);border:1px solid var(--line);border-radius:2.6cqw;padding:4cqw;display:grid;gap:2.4cqw}
+.dlg h3{margin:0;font:700 3.6cqw "Red Hat Display"}
+.dlg label{display:grid;gap:.8cqw;font-size:2.2cqw;color:var(--mute)}
+.dlg input{font:500 3cqw "Red Hat Text";color:var(--ink);background:#0b1433;border:1px solid var(--line);border-radius:1.4cqw;padding:1.6cqw 2cqw;width:100%;color-scheme:dark}
+.dlg .row2{display:grid;grid-template-columns:1fr 1fr;gap:2cqw}
+.dlg .chk{display:flex;align-items:center;gap:1.6cqw;font-size:2.6cqw;color:var(--ink)}
+.dlg .chk input{width:4cqw;height:4cqw;accent-color:var(--t)}
+.dlg .acts{display:flex;gap:2cqw;justify-content:flex-end;margin-top:1cqw}
+.dlg .acts button{font:700 2.8cqw "Red Hat Display";border:0;border-radius:1.4cqw;padding:2cqw 3.6cqw;cursor:pointer;background:var(--line);color:var(--ink)}
+.dlg .acts .save{background:var(--t);color:#062226}
+.dlg .acts .del{background:transparent;color:var(--r);margin-right:auto;padding-left:0}
 /* 6 Notizen */
 .notes form{display:grid;grid-template-columns:1fr 18cqw;gap:1.6cqw}
 .notes textarea{font:500 3.4cqw/1.35 "Red Hat Text";color:var(--ink);background:#0b1433;border:.25cqw dashed var(--line);border-radius:1.6cqw;padding:2cqw 2.4cqw;width:100%;height:21cqw;resize:none}
@@ -151,9 +173,8 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
       </div>
     </section>
     <section class="card cal">
-      <h2>Familienkalender <span id="kw">KW 48</span></h2>
-      <div class="day">Heute</div><ul id="today"></ul>
-      <div class="day">Morgen</div><ul id="tomorrow"></ul>
+      <h2>Familienkalender <span style="display:flex;gap:1.6cqw;align-items:center"><span id="kw">KW 48</span><button class="plus" id="plus" aria-label="Termin hinzufügen">+</button></span></h2>
+      <div class="calscroll" id="cal"></div>
     </section>
   </div>
 
@@ -163,13 +184,23 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
     <div class="ok" id="ok" aria-live="polite"></div>
   </section>
   <p class="note">Layout-Vorschau mit Beispieldaten – Anbindung folgt</p>
+  <div class="modal" id="modal">
+    <form class="dlg" id="evf">
+      <h3 id="evh">Neuer Termin</h3>
+      <label>Titel<input id="evt" required autocomplete="off"></label>
+      <label>Datum<input type="date" id="evd" required></label>
+      <div class="chk"><input type="checkbox" id="eva"><span>Ganztägig</span></div>
+      <div class="row2" id="evtimes"><label>Von<input type="time" id="evs" value="09:00"></label><label>Bis<input type="time" id="eve" value="10:00"></label></div>
+      <div class="acts"><button type="button" class="del" id="evdel">Löschen</button><button type="button" id="evx">Abbrechen</button><button class="save">Speichern</button></div>
+    </form>
+  </div>
 </main>
 
 <script>
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='3';
+const BUILD='4';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD)location.replace('./?v='+m[1]);}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -181,9 +212,40 @@ tick();setInterval(tick,10000);
 const hrs=[[14,6,0.4],[15,6,0.8],[16,5,1.2],[17,5,0.6],[18,4,0.2],[19,4,0],[20,3,0],[21,3,0.1]];
 $('hours').innerHTML=hrs.map(([h,t,r])=>`<div class="h"><b>${h} Uhr</b><i><span style="width:${Math.min(100,r/1.2*100)}%"></span></i><em>${t}°</em><small>${r?r.toFixed(1).replace('.',','):'–'}</small></div>`).join('');
 
-const ev=a=>a.map(([t,x,done])=>`<li class="${done?'done':''}"><time>${t}</time><span>${x}</span></li>`).join('');
-$('today').innerHTML=ev([['08:00','Zahnarzt',1],['17:30','Fußballtraining'],['19:00','Elternabend']]);
-$('tomorrow').innerHTML=ev([['ganztags','Gelber Sack'],['15:00','Paket abholen']]);
+// Kalender (Beispieldaten, Google-Anbindung folgt)
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const plusD=n=>{const d=new Date();d.setDate(d.getDate()+n);return iso(d);};
+let nid=1;const E=(o,s,e,t)=>({id:nid++,date:plusD(o),start:s,end:e,title:t});
+const evs=[E(0,'08:00','09:00','Zahnarzt'),E(0,'17:30','19:00','Fußballtraining'),E(0,'19:00','21:00','Elternabend'),
+  E(1,'','','Gelber Sack'),E(1,'15:00','15:30','Paket abholen'),E(3,'18:00','19:30','Sport'),E(5,'','','Geburtstag Oma'),
+  E(6,'10:00','12:00','Wochenmarkt'),E(9,'16:00','17:00','Elterngespräch'),E(12,'','','Restmüll')];
+const dayName=ds=>{const t=iso(new Date());if(ds===t)return'Heute';if(ds===plusD(1))return'Morgen';
+  return new Date(ds+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});};
+const renderCal=()=>{const now=new Date(),t=iso(now),hm=pad(now.getHours())+':'+pad(now.getMinutes());
+  const list=evs.filter(e=>e.date>=t).sort((a,b)=>(a.date+(a.start||'00:00')).localeCompare(b.date+(b.start||'00:00')));
+  const days=[...new Set([t,...list.map(e=>e.date)])];
+  $('cal').innerHTML=days.map(d=>{const its=list.filter(e=>e.date===d);
+    return `<div class="day">${dayName(d)}</div>`+(its.length?`<ul>${its.map(e=>{const done=d===t&&e.end&&e.end<=hm;
+      return `<li class="${done?'done':''}"><button data-id="${e.id}"><time>${e.start||'ganztags'}</time><span>${esc(e.title)}</span></button></li>`;}).join('')}</ul>`:'<div class="empty">Keine Termine</div>');}).join('');};
+renderCal();setInterval(renderCal,60000);
+const kw=d=>{d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-n);
+  return Math.ceil(((d-new Date(Date.UTC(d.getUTCFullYear(),0,1)))/864e5+1)/7);};
+$('kw').textContent='KW '+kw(new Date());
+let edit=null;
+const syncAll=()=>{const a=$('eva').checked;$('evtimes').style.display=a?'none':'grid';};
+const openDlg=e=>{edit=e||null;$('evh').textContent=e?'Termin bearbeiten':'Neuer Termin';$('evdel').style.visibility=e?'visible':'hidden';
+  $('evt').value=e?e.title:'';$('evd').value=e?e.date:plusD(0);$('eva').checked=e?!e.start:false;
+  $('evs').value=e&&e.start?e.start:'09:00';$('eve').value=e&&e.end?e.end:'10:00';syncAll();$('modal').classList.add('on');setTimeout(()=>$('evt').focus(),50);};
+const closeDlg=()=>{$('modal').classList.remove('on');};
+$('plus').addEventListener('click',()=>openDlg());
+$('cal').addEventListener('click',ev=>{const b=ev.target.closest('button[data-id]');if(b)openDlg(evs.find(x=>x.id===+b.dataset.id));});
+$('eva').addEventListener('change',syncAll);
+$('evx').addEventListener('click',closeDlg);
+$('modal').addEventListener('click',ev=>{if(ev.target===$('modal'))closeDlg();});
+$('evdel').addEventListener('click',()=>{if(edit)evs.splice(evs.indexOf(edit),1);closeDlg();renderCal();});
+$('evf').addEventListener('submit',ev=>{ev.preventDefault();const a=$('eva').checked;
+  const o={title:$('evt').value.trim(),date:$('evd').value,start:a?'':$('evs').value,end:a?'':$('eve').value};
+  if(!o.title||!o.date)return;if(edit)Object.assign(edit,o);else evs.push({id:nid++,...o});closeDlg();renderCal();});
 
 const map=$('map');
 const cells=[[80,220,55,.9],[120,190,35,.6],[50,260,30,.5],[230,270,45,.7],[260,245,25,.95],[40,150,28,.4]];
