@@ -152,20 +152,62 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .sl li.done button{color:var(--mute);text-decoration:line-through}
 .sl li.done button::before{background:var(--t)}
 .cal li.shopli time{color:var(--y)}
+
+/* Kopf neu: Uhr | Symbol + Temperatur gleich groß, darunter Datum (auf Uhrbreite) | Wetterlage + Ort gleich groß */
+.top{grid-template-columns:auto auto;justify-content:space-between;align-items:start}
+.tl,.tr{min-width:0}
+.trow{display:flex;align-items:center;gap:calc(1.5*var(--u))}
+.top .temp{font:800 calc(13*var(--u))/.9 "Red Hat Display",sans-serif;letter-spacing:-.03em}
+.wicon svg{width:calc(11*var(--u));height:calc(11*var(--u));overflow:visible}
+.date{white-space:nowrap;margin-top:calc(1*var(--u))}
+.top .cond{color:var(--mute);margin-top:calc(.6*var(--u));white-space:nowrap;font-family:"Red Hat Display"}
+.top .cond#wc{margin-top:calc(1*var(--u))}
+/* animierte Wettersymbole */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drift{0%,100%{transform:translateX(-2px)}50%{transform:translateX(3px)}}
+@keyframes fall{0%{transform:translateY(-4px);opacity:0}30%{opacity:1}100%{transform:translateY(8px);opacity:0}}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.75}}
+@keyframes flash{0%,90%,100%{opacity:1}93%,97%{opacity:.2}}
+.wicon .rays{transform-origin:24px 22px;animation:spin 18s linear infinite}
+.wicon .rays.big{transform-origin:32px 32px}
+.wicon .cl{animation:drift 6s ease-in-out infinite}
+.wicon .dp{animation:fall 1.4s linear infinite}.wicon .dp:nth-child(2){animation-delay:.45s}.wicon .dp:nth-child(3){animation-delay:.9s}
+.wicon .fk{animation:fall 3s linear infinite}.wicon .fk:nth-child(2){animation-delay:1s}.wicon .fk:nth-child(3){animation-delay:2s}
+.wicon .mn{animation:glow 5s ease-in-out infinite}
+.wicon .fg{animation:drift 5s ease-in-out infinite}.wicon .fg:nth-child(2){animation-delay:-2s}
+.wicon .bolt{animation:flash 4s linear infinite}
+@media(prefers-reduced-motion:reduce){.wicon *{animation:none!important}}
+/* Regen als senkrechtes Balkendiagramm */
+.hours{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:calc(1*var(--u));align-items:end}
+.hc{display:grid;grid-template-rows:auto calc(11*var(--u)) auto auto;justify-items:center;gap:calc(.6*var(--u))}
+.hc small{font-size:calc(1.9*var(--u));color:var(--t);white-space:nowrap;min-height:1.2em}
+.hc i{width:62%;height:100%;border-radius:calc(1*var(--u));background:#0b1433;position:relative;overflow:hidden}
+.hc i span{position:absolute;left:0;right:0;bottom:0;border-radius:calc(1*var(--u));background:linear-gradient(var(--t),var(--b))}
+.hc b{font:600 calc(2*var(--u)) "Red Hat Text";color:var(--mute);white-space:nowrap}
+.hc em{font:700 calc(2.2*var(--u)) "Red Hat Display";font-style:normal}
+/* Malen */
+.pthumb{flex:none;width:calc(12*var(--u));height:calc(8*var(--u));object-fit:cover;border-radius:calc(1*var(--u));background:#fff}
+.paintdlg{width:calc(94*var(--u));height:90%;grid-template-rows:auto 1fr auto}
+.ptools{display:flex;flex-wrap:wrap;gap:calc(1.6*var(--u));align-items:center}
+.pcols,.psizes{display:flex;gap:calc(1*var(--u))}
+.pcols button{width:calc(5.5*var(--u));height:calc(5.5*var(--u));border-radius:50%;border:calc(.4*var(--u)) solid transparent;cursor:pointer}
+.pcols button.on,.psizes button.on,.ptool.on{outline:calc(.4*var(--u)) solid var(--y);outline-offset:calc(.3*var(--u))}
+.psizes button{width:calc(5.5*var(--u));height:calc(5.5*var(--u));border-radius:calc(1*var(--u));border:0;background:var(--line);cursor:pointer;display:grid;place-items:center}
+.psizes button i{display:block;border-radius:50%;background:var(--ink)}
+.ptool{font:600 calc(2.6*var(--u)) "Red Hat Text";border:0;border-radius:calc(1.4*var(--u));padding:calc(1.4*var(--u)) calc(2.4*var(--u));background:var(--line);color:var(--ink);cursor:pointer}
+.pwrap{position:relative;min-height:0;border-radius:calc(1.6*var(--u));overflow:hidden;background:#fff}
+#pcanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 /* Querformat: drei Spalten, gleiche Elementgröße wie hochkant */
 @media (orientation:landscape){
   :root{--u:calc(min(100vw/1.6667,100vh)/100)}
   .screen{width:min(100vw,calc(100vh*1.6667));aspect-ratio:1.6667;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
-    grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"top cam cal" "hrs cam cal" "radar cam cal" "radar sp notes"}
+    grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"top cam cal" "radar cam cal" "hrs cam cal" "paint sp notes"}
   .two{display:contents}
-  .top{grid-area:top}.hrs{grid-area:hrs}.radar{grid-area:radar}.cam{grid-area:cam}.sp{grid-area:sp}.cal{grid-area:cal;min-height:0}.notes{grid-area:notes}
+  .top{grid-area:top}.hrs{grid-area:hrs}.radar{grid-area:radar}.cam{grid-area:cam}.sp{grid-area:sp}.cal{grid-area:cal;min-height:0}.notes{grid-area:notes}.paint{grid-area:paint}
   .calscroll{height:auto;min-height:0}
-  .clock{font-size:calc(11*var(--u))}.temp{font-size:calc(8*var(--u))}
-  .top{grid-template-columns:1fr;gap:calc(1.2*var(--u))}
-  .now{justify-content:flex-start;text-align:left;flex-direction:row-reverse}
-  .date{white-space:nowrap}
-  .hours .h:nth-child(n+6){display:none}
-  .hours{gap:calc(.5*var(--u))}
+  .clock,.top .temp{font-size:calc(10*var(--u))}
+  .wicon svg{width:calc(8.5*var(--u));height:calc(8.5*var(--u))}
+  .hc{grid-template-rows:auto calc(8*var(--u)) auto auto}
   .sp{grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center}
   .sp h2{grid-column:1/-1}
   .ctl{gap:calc(1.2*var(--u))}
@@ -173,30 +215,28 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .ctl button.play{width:calc(8.5*var(--u));height:calc(8.5*var(--u))}
   .spcon{grid-column:1/-1}
   .shopdlg{width:calc(130*var(--u))}
-  .top .now svg{width:calc(8*var(--u));height:calc(8*var(--u))}
+  .paintdlg{width:calc(150*var(--u))}
 }
+
 </style>
 </head>
 <body>
 <main class="screen">
   <header class="top">
-    <div>
+    <div class="tl">
       <div class="clock num" id="clock">13:59</div>
       <div class="date" id="date">Dienstag, 24. November</div>
     </div>
-    <div class="now">
-      <div>
-        <div class="temp num" id="wt">–°</div>
-        <div class="cond" id="wc">Wetter wird geladen …</div>
-        <div class="cond">Lingen (Ems)</div>
-      </div>
-      <span id="wi" style="display:contents"></span>
+    <div class="tr">
+      <div class="trow"><span id="wi" class="wicon"></span><div class="temp num" id="wt">–°</div></div>
+      <div class="cond" id="wc">Wetter wird geladen …</div>
+      <div class="cond" id="wloc">Lingen (Ems)</div>
     </div>
   </header>
 
   <div class="two">
     <section class="card hrs">
-      <h2>Nächste Stunden <span>Regen mm</span></h2>
+      <h2>Regen nächste Stunden <span>mm</span></h2>
       <div class="hours" id="hours"></div>
     </section>
     <section class="card radar">
@@ -240,10 +280,15 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
     </section>
   </div>
 
-  <section class="card notes">
-    <button class="shopbtn" id="shopopen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Einkaufszettel<small>Antippen und mit dem Stift schreiben</small></span></button>
-    <div class="ok" id="okcard" aria-live="polite"></div>
-  </section>
+  <div class="two">
+    <section class="card notes">
+      <button class="shopbtn" id="shopopen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Einkaufszettel<small>Antippen und mit dem Stift schreiben</small></span></button>
+      <div class="ok" id="okcard" aria-live="polite"></div>
+    </section>
+    <section class="card paint">
+      <button class="shopbtn" id="paintopen"><img id="paintthumb" class="pthumb" alt="Letztes Bild" hidden><svg id="painticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg><span>Malen<small>Antippen und mit dem Stift malen</small></span></button>
+    </section>
+  </div>
   
   <div class="modal" id="modal">
     <form class="dlg" id="evf">
@@ -285,33 +330,50 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
       <div class="acts"><button type="button" class="del" id="sladd" style="color:var(--t)">+ Artikel</button><button type="button" id="slx">Schließen</button><button class="save" id="slsave" disabled>Abgehakte entfernen</button></div>
     </div>
   </div>
+  <div class="modal" id="paintmodal">
+    <div class="dlg paintdlg">
+      <div class="ptools" id="ptools">
+        <span class="pcols" id="pcols"></span>
+        <span class="psizes" id="psizes"></span>
+        <button type="button" class="ptool" id="perase">Radierer</button>
+      </div>
+      <div class="pwrap"><canvas id="pcanvas"></canvas></div>
+      <div class="acts"><button type="button" class="del" id="pnew">Neues Bild</button><button type="button" id="px">Schließen</button><button type="button" class="save" id="psave">Speichern</button></div>
+    </div>
+  </div>
 </main>
 
 <script>
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='28';
+const BUILD='29';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
 const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tick=()=>{const d=new Date();$('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes());
-  $('date').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});};
-tick();setInterval(tick,10000);
+  $('date').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});if(typeof fitHead==='function')fitHead();};
+function fitHead(){const c=$('clock'),d=$('date');d.style.fontSize='';const cw=c.getBoundingClientRect().width,dw=d.getBoundingClientRect().width;
+  if(cw&&dw){const fs=parseFloat(getComputedStyle(d).fontSize)*cw/dw;d.style.fontSize=fs+'px';$('wc').style.fontSize=fs+'px';$('wloc').style.fontSize=fs+'px';}}
+tick();setInterval(tick,10000);addEventListener('resize',()=>setTimeout(fitHead,100));(document.fonts?document.fonts.ready:Promise.resolve()).then(fitHead);
 
 // Wetter: Open-Meteo (DWD-Modelle), Lingen
 const LAT=52.523,LON=7.316;
 const WTXT={0:'Klar',1:'Überwiegend klar',2:'Teils bewölkt',3:'Bedeckt',45:'Nebel',48:'Reifnebel',51:'Leichter Niesel',53:'Niesel',55:'Starker Niesel',56:'Gefrierender Niesel',57:'Gefrierender Niesel',
   61:'Leichter Regen',63:'Regen',65:'Starker Regen',66:'Gefrierender Regen',67:'Gefrierender Regen',71:'Leichter Schneefall',73:'Schneefall',75:'Starker Schneefall',77:'Schneegriesel',
   80:'Regenschauer',81:'Regenschauer',82:'Starke Schauer',85:'Schneeschauer',86:'Schneeschauer',95:'Gewitter',96:'Gewitter mit Hagel',99:'Gewitter mit Hagel'};
-const icon=(c,day)=>{const sun=day?'<circle cx="24" cy="22" r="11" fill="#f7e463"/>':'<path d="M30 10a13 13 0 1 0 10 22 11 11 0 0 1-10-22z" fill="#dfe5f7"/>';
-  const cloud=(f='#dfe5f7')=>`<path d="M20 46h28a10 10 0 0 0 0-20 14 14 0 0 0-27 3 9 9 0 0 0-1 17z" fill="${f}"/>`;
-  const drops='<path d="M26 51l-3 7M36 51l-3 7M46 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/>';
-  const flakes='<g fill="#fff"><circle cx="25" cy="54" r="2.5"/><circle cx="35" cy="58" r="2.5"/><circle cx="45" cy="54" r="2.5"/></g>';
-  let b;if(c===0)b=day?'<circle cx="32" cy="32" r="14" fill="#f7e463"/>':'<path d="M36 14a18 18 0 1 0 14 30 15 15 0 0 1-14-30z" fill="#dfe5f7"/>';
-  else if(c<=2)b=sun+cloud();else if(c===3)b=cloud('#aab4d6');else if(c<=48)b='<path d="M12 28h40M8 36h48M14 44h36" stroke="#aab4d6" stroke-width="4" stroke-linecap="round"/>';
-  else if(c>=71&&c<=77||c===85||c===86)b=cloud()+flakes;else if(c>=95)b=cloud('#8d97c4')+'<path d="M34 46l-6 10h7l-4 8" stroke="#f7e463" stroke-width="3" fill="none" stroke-linejoin="round"/>';
+const icon=(c,day)=>{
+  const rays=(cx,cy,r1,r2,big)=>`<g class="rays${big?' big':''}">${[0,45,90,135,180,225,270,315].map(a=>{const t=a*Math.PI/180;return `<line x1="${cx+r1*Math.cos(t)}" y1="${cy+r1*Math.sin(t)}" x2="${cx+r2*Math.cos(t)}" y2="${cy+r2*Math.sin(t)}" stroke="#f7e463" stroke-width="3" stroke-linecap="round"/>`}).join('')}</g>`;
+  const sun=day?rays(24,22,14,18)+'<circle cx="24" cy="22" r="10" fill="#f7e463"/>':'<path class="mn" d="M30 8a14 14 0 1 0 11 23 12 12 0 0 1-11-23z" fill="#dfe5f7"/>';
+  const cloud=(f='#dfe5f7')=>`<path class="cl" d="M20 46h28a10 10 0 0 0 0-20 14 14 0 0 0-27 3 9 9 0 0 0-1 17z" fill="${f}"/>`;
+  const drops='<g><path class="dp" d="M26 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/><path class="dp" d="M36 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/><path class="dp" d="M46 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/></g>';
+  const flakes='<g fill="#fff"><circle class="fk" cx="25" cy="54" r="2.5"/><circle class="fk" cx="35" cy="57" r="2.5"/><circle class="fk" cx="45" cy="54" r="2.5"/></g>';
+  let b;if(c===0)b=day?rays(32,32,19,25,true)+'<circle cx="32" cy="32" r="14" fill="#f7e463"/>':'<path class="mn" d="M36 12a20 20 0 1 0 16 32 17 17 0 0 1-16-32z" fill="#dfe5f7"/>';
+  else if(c<=2)b=sun+cloud();else if(c===3)b=cloud('#aab4d6');
+  else if(c<=48)b='<g><path class="fg" d="M12 28h40" stroke="#aab4d6" stroke-width="4" stroke-linecap="round"/><path class="fg" d="M8 36h48" stroke="#aab4d6" stroke-width="4" stroke-linecap="round"/><path class="fg" d="M14 44h36" stroke="#aab4d6" stroke-width="4" stroke-linecap="round"/></g>';
+  else if(c>=71&&c<=77||c===85||c===86)b=cloud()+flakes;
+  else if(c>=95)b=cloud('#8d97c4')+'<path class="bolt" d="M34 46l-6 10h7l-4 8" stroke="#f7e463" stroke-width="3" fill="none" stroke-linejoin="round"/>';
   else b=(c>=80?sun:'')+cloud()+drops;return `<svg viewBox="0 0 64 64" aria-hidden="true">${b}</svg>`;};
 const fmt=v=>v.toFixed(1).replace('.',',');
 async function loadWeather(){try{
@@ -324,7 +386,7 @@ async function loadWeather(){try{
   let i=h.time.indexOf(key);if(i<0)i=0;i+=1;
   const rows=h.time.slice(i,i+8).map((t,k)=>[+t.slice(11,13),Math.round(h.temperature_2m[i+k]),h.precipitation[i+k]||0]);
   const mx=Math.max(1,...rows.map(r=>r[2]));
-  $('hours').innerHTML=rows.map(([hh,t,r])=>`<div class="h"><b>${hh} Uhr</b><i><span style="width:${r/mx*100}%"></span></i><em>${t}°</em><small>${r>=.05?fmt(r):'–'}</small></div>`).join('');
+  $('hours').innerHTML=rows.map(([hh,t,r])=>`<div class="hc"><small>${r>=.05?fmt(r):''}</small><i><span style="height:${Math.max(r>=.05?6:0,r/mx*100)}%"></span></i><b>${hh}</b><em>${t}°</em></div>`).join('');fitHead();
 }catch(e){$('wc').textContent='Wetter nicht erreichbar';}}
 loadWeather();setInterval(loadWeather,10*60000);
 
@@ -535,6 +597,34 @@ $('sladd').addEventListener('click',()=>{$('slmodal').classList.remove('on');$('
 $('slsave').addEventListener('click',async()=>{const keep=shopList.filter((t,i)=>!slDone.has(i));$('slsave').disabled=true;$('slok').textContent='Wird gespeichert …';
   try{await api({action:'shop_set',items:keep.join('\n')});shopList=keep;slDone=new Set();slRender();renderCal();$('slok').textContent='✓ Gespeichert';}
   catch(e){$('slok').textContent='Hat nicht geklappt – bitte nochmal';$('slsave').disabled=false;}});
+
+// Malen: freie Zeichenfläche, letztes Bild bleibt als Vorschau
+const pc=$('pcanvas'),px=pc.getContext('2d');let pCol='#1b1f2e',pSize=6,pErase=false,pDraw=null;
+const PCOLS=['#1b1f2e','#e8452c','#f28c28','#f7e463','#2fa84f','#3b4fd8','#8e44c9','#8a5a2b'];
+$('pcols').innerHTML=PCOLS.map((c,i)=>`<button type="button" data-c="${c}" style="background:${c}" class="${i?'':'on'}" aria-label="Farbe"></button>`).join('');
+$('psizes').innerHTML=[3,6,14].map((w,i)=>`<button type="button" data-w="${w}" class="${i===1?'on':''}" aria-label="Stiftgröße"><i style="width:${w+2}px;height:${w+2}px"></i></button>`).join('');
+const pSel=(box,el)=>{[...box.children].forEach(b=>b.classList.toggle('on',b===el));};
+$('pcols').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;pCol=b.dataset.c;pErase=false;$('perase').classList.remove('on');pSel($('pcols'),b);});
+$('psizes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;pSize=+b.dataset.w;pSel($('psizes'),b);});
+$('perase').addEventListener('click',()=>{pErase=!pErase;$('perase').classList.toggle('on',pErase);});
+const pFit=keep=>{const r=pc.getBoundingClientRect(),d=devicePixelRatio||1;let old=null;if(keep&&pc.width){old=document.createElement('canvas');old.width=pc.width;old.height=pc.height;old.getContext('2d').drawImage(pc,0,0);}
+  pc.width=r.width*d;pc.height=r.height*d;px.setTransform(d,0,0,d,0,0);px.fillStyle='#fff';px.fillRect(0,0,r.width,r.height);if(old)px.drawImage(old,0,0,r.width,r.height);};
+const pLoad=()=>{const u=ls.get('flurpaint');if(!u)return;const im=new Image();im.onload=()=>{const r=pc.getBoundingClientRect();px.drawImage(im,0,0,r.width,r.height);};im.src=u;};
+const pPos=e=>{const r=pc.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+pc.addEventListener('pointerdown',e=>{e.preventDefault();pc.setPointerCapture(e.pointerId);const [x,y]=pPos(e);pDraw={x,y};
+  px.beginPath();px.arc(x,y,(pErase?pSize*3:pSize)/2*(e.pressure||.5)*1.6,0,Math.PI*2);px.fillStyle=pErase?'#fff':pCol;px.fill();});
+pc.addEventListener('pointermove',e=>{if(!pDraw)return;const [x,y]=pPos(e);const w=(pErase?pSize*3:pSize)*((e.pointerType==='pen'&&e.pressure)?(.4+e.pressure*1.2):1);
+  px.strokeStyle=pErase?'#fff':pCol;px.lineWidth=w;px.lineCap='round';px.lineJoin='round';px.beginPath();px.moveTo(pDraw.x,pDraw.y);px.lineTo(x,y);px.stroke();pDraw={x,y};});
+const pUp=()=>{pDraw=null;};pc.addEventListener('pointerup',pUp);pc.addEventListener('pointercancel',pUp);
+const pThumb=()=>{const u=ls.get('flurpaint');$('paintthumb').hidden=!u;$('painticon').style.display=u?'none':'';if(u)$('paintthumb').src=u;};
+$('paintopen').addEventListener('click',()=>{$('paintmodal').classList.add('on');requestAnimationFrame(()=>{pFit(false);pLoad();});});
+$('px').addEventListener('click',()=>$('paintmodal').classList.remove('on'));
+$('pnew').addEventListener('click',()=>pFit(false));
+$('psave').addEventListener('click',()=>{const r=pc.getBoundingClientRect(),sc=Math.min(1,1000/r.width),o=document.createElement('canvas');
+  o.width=Math.round(r.width*sc);o.height=Math.round(r.height*sc);o.getContext('2d').drawImage(pc,0,0,o.width,o.height);
+  ls.set('flurpaint',o.toDataURL('image/jpeg',.85));pThumb();$('paintmodal').classList.remove('on');});
+new ResizeObserver(()=>{if($('paintmodal').classList.contains('on'))pFit(true);}).observe(pc);
+pThumb();
 }
 </script>
 </body>
