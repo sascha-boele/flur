@@ -14,116 +14,128 @@
    PICTURE: Regenradar mit Zeitregler, breites Livebild der Haustür-Kamera
    COLOUR and TYPE: Navy #0b1433, Wetterskala blau→türkis→gelb→rot, Spotify-Grün nur im Player; Red Hat Display/Text
    LAYOUT: Hochformat 1200×2000 (0,6), in cqw skaliert; 1|2, 3, 4|5, 6 nach Skizze */
-:root{color-scheme:dark;--bg:#0b1433;--card:#121d45;--line:#22306a;--ink:#eef1fb;--mute:#8d97c4;--b:#3b4fd8;--t:#4fc1c6;--y:#f7e463;--r:#e8452c;--sp:#1ed760}
+:root{--u:calc(min(100vw,100vh*0.6)/100);color-scheme:dark;--bg:#0b1433;--card:#121d45;--line:#22306a;--ink:#eef1fb;--mute:#8d97c4;--b:#3b4fd8;--t:#4fc1c6;--y:#f7e463;--r:#e8452c;--sp:#1ed760}
 *{box-sizing:border-box;min-width:0}
 [hidden]{display:none!important}
 html,body{margin:0;height:100%;background:#050a1c}
 body{display:grid;place-items:center;font-family:"Red Hat Text",system-ui,sans-serif;color:var(--ink);overflow:hidden}
-.screen{width:min(100vw,calc(100vh*0.6));aspect-ratio:.6;container-type:inline-size;background:var(--bg);display:grid;grid-template-rows:auto auto 1fr auto auto;gap:2.2cqw;padding:3.4cqw;overflow:hidden}
-.card{background:var(--card);border-radius:2.4cqw;padding:2.6cqw;position:relative;overflow:hidden}
-h2{font:600 2.2cqw/1 "Red Hat Text",sans-serif;color:var(--mute);margin:0 0 1.6cqw;display:flex;justify-content:space-between;align-items:center;gap:1cqw}
+.screen{width:min(100vw,calc(100vh*0.6));aspect-ratio:.6;container-type:inline-size;background:var(--bg);display:grid;grid-template-rows:auto auto 1fr auto auto;gap:calc(2.2*var(--u));padding:calc(3.4*var(--u));overflow:hidden}
+.card{background:var(--card);border-radius:calc(2.4*var(--u));padding:calc(2.6*var(--u));position:relative;overflow:hidden}
+h2{font:600 calc(2.2*var(--u))/1 "Red Hat Text",sans-serif;color:var(--mute);margin:0 0 calc(1.6*var(--u));display:flex;justify-content:space-between;align-items:center;gap:calc(1*var(--u))}
 .num{font-variant-numeric:tabular-nums}
-.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2.2cqw}
-.tag{background:rgba(11,20,51,.75);padding:.8cqw 1.4cqw;border-radius:1cqw;color:var(--ink)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(2.2*var(--u))}
+.tag{background:rgba(11,20,51,.75);padding:calc(.8*var(--u)) calc(1.4*var(--u));border-radius:calc(1*var(--u));color:var(--ink)}
 /* Kopf */
-.top{display:grid;grid-template-columns:1fr auto;align-items:end;gap:3cqw;padding:.6cqw .6cqw 0}
-.clock{font:800 13cqw/.9 "Red Hat Display",sans-serif;letter-spacing:-.04em}
-.date{font:500 3cqw/1.2 "Red Hat Display",sans-serif;color:var(--mute);margin-top:1cqw}
-.now{display:flex;align-items:center;gap:2cqw;text-align:right}
-.now svg{width:11cqw;height:11cqw}
-.temp{font:800 9cqw/.9 "Red Hat Display",sans-serif}
-.cond{font-size:2.4cqw;color:var(--mute);margin-top:.6cqw}
+.top{display:grid;grid-template-columns:1fr auto;align-items:end;gap:calc(3*var(--u));padding:calc(.6*var(--u)) calc(.6*var(--u)) 0}
+.clock{font:800 calc(13*var(--u))/.9 "Red Hat Display",sans-serif;letter-spacing:-.04em}
+.date{font:500 calc(3*var(--u))/1.2 "Red Hat Display",sans-serif;color:var(--mute);margin-top:calc(1*var(--u))}
+.now{display:flex;align-items:center;gap:calc(2*var(--u));text-align:right}
+.now svg{width:calc(11*var(--u));height:calc(11*var(--u))}
+.temp{font:800 calc(9*var(--u))/.9 "Red Hat Display",sans-serif}
+.cond{font-size:calc(2.4*var(--u));color:var(--mute);margin-top:calc(.6*var(--u))}
 /* 1 Stunden */
-.hours{display:grid;gap:.75cqw}
-.h{display:grid;grid-template-columns:8.5cqw 1fr 5cqw 5.5cqw;gap:1.4cqw;align-items:center;font-size:2.3cqw}
+.hours{display:grid;gap:calc(.75*var(--u))}
+.h{display:grid;grid-template-columns:calc(8.5*var(--u)) 1fr calc(5*var(--u)) calc(5.5*var(--u));gap:calc(1.4*var(--u));align-items:center;font-size:calc(2.3*var(--u))}
 .h b{font-weight:600;color:var(--mute);white-space:nowrap}
-.h i{height:1.7cqw;border-radius:1cqw;background:#0b1433;overflow:hidden}
-.h i span{display:block;height:100%;border-radius:1cqw;background:linear-gradient(90deg,var(--b),var(--t))}
-.h em{font:700 2.5cqw "Red Hat Display";font-style:normal;text-align:right}
-.h small{font-size:2.1cqw;color:var(--t);text-align:right;white-space:nowrap}
+.h i{height:calc(1.7*var(--u));border-radius:calc(1*var(--u));background:#0b1433;overflow:hidden}
+.h i span{display:block;height:100%;border-radius:calc(1*var(--u));background:linear-gradient(90deg,var(--b),var(--t))}
+.h em{font:700 calc(2.5*var(--u)) "Red Hat Display";font-style:normal;text-align:right}
+.h small{font-size:calc(2.1*var(--u));color:var(--t);text-align:right;white-space:nowrap}
 /* 2 Radar */
 .radar{padding:0;display:grid;grid-template-rows:1fr auto auto}
-.radar .fig{position:relative;min-height:22cqw}
+.radar .fig{position:relative;min-height:calc(22*var(--u))}
 #map{position:absolute;inset:0;background:#0e1430;z-index:0}
-.leaflet-container{font:1.6cqw "Red Hat Text",sans-serif}
-.leaflet-control-attribution{background:rgba(11,20,51,.6)!important;color:#6c76a8!important;font-size:1.3cqw!important;line-height:1.4}
+.leaflet-container{font:calc(1.6*var(--u)) "Red Hat Text",sans-serif}
+.leaflet-control-attribution{background:rgba(11,20,51,.6)!important;color:#6c76a8!important;font-size:calc(1.3*var(--u))!important;line-height:1.4}
 .leaflet-control-attribution a{color:#8d97c4!important}
-.pin{width:3cqw!important;height:3cqw!important;margin:-1.5cqw 0 0 -1.5cqw!important;border-radius:50%;background:#fff;box-shadow:0 0 0 1.2cqw rgba(255,255,255,.25)}
-.pinl{font:700 2.4cqw "Red Hat Display";color:#fff;text-shadow:0 0 .6cqw #000;white-space:nowrap;margin:-1.6cqw 0 0 2.6cqw!important;width:auto!important;height:auto!important}
+.pin{width:calc(3*var(--u))!important;height:calc(3*var(--u))!important;margin:-calc(1.5*var(--u)) 0 0 -calc(1.5*var(--u))!important;border-radius:50%;background:#fff;box-shadow:0 0 0 calc(1.2*var(--u)) rgba(255,255,255,.25)}
+.pinl{font:700 calc(2.4*var(--u)) "Red Hat Display";color:#fff;text-shadow:0 0 calc(.6*var(--u)) #000;white-space:nowrap;margin:-calc(1.6*var(--u)) 0 0 calc(2.6*var(--u))!important;width:auto!important;height:auto!important}
 .stale{color:var(--y)}
 .sat{filter:brightness(.6) saturate(.8)}
-.radar h2{position:absolute;top:2cqw;left:2cqw;right:2cqw;z-index:1000;pointer-events:none;font-size:1.9cqw}
-.slider{display:grid;grid-template-columns:auto 1fr auto;gap:1.4cqw;align-items:center;padding:1cqw 2cqw 1.6cqw}
-.slider span{font:600 1.9cqw "Red Hat Text";color:var(--mute);white-space:nowrap}
-input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
-.legend{height:.8cqw;background:linear-gradient(90deg,var(--b),var(--t),var(--y),var(--r))}
+.radar h2{position:absolute;top:calc(2*var(--u));left:calc(2*var(--u));right:calc(2*var(--u));z-index:1000;pointer-events:none;font-size:calc(1.9*var(--u))}
+.slider{display:grid;grid-template-columns:auto 1fr auto;gap:calc(1.4*var(--u));align-items:center;padding:calc(1*var(--u)) calc(2*var(--u)) calc(1.6*var(--u))}
+.slider span{font:600 calc(1.9*var(--u)) "Red Hat Text";color:var(--mute);white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--t);height:calc(5*var(--u));margin:0}
+.legend{height:calc(.8*var(--u));background:linear-gradient(90deg,var(--b),var(--t),var(--y),var(--r))}
 /* 3 Kamera */
-.cam{padding:0;min-height:30cqw}
+.cam{padding:0;min-height:calc(30*var(--u))}
 .cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.cammsg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:6cqw;font-size:2.6cqw;color:var(--mute);background:#0e1430}
-.camdbg{position:absolute;left:2.6cqw;bottom:1.6cqw;font-size:1.7cqw;color:var(--mute);z-index:2}
-.gear{position:absolute;top:1.6cqw;right:1.6cqw;width:6.5cqw;height:6.5cqw;border-radius:50%;border:0;background:rgba(11,20,51,.7);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.cammsg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:calc(6*var(--u));font-size:calc(2.6*var(--u));color:var(--mute);background:#0e1430}
+.camdbg{position:absolute;left:calc(2.6*var(--u));bottom:calc(1.6*var(--u));font-size:calc(1.7*var(--u));color:var(--mute);z-index:2}
+.gear{position:absolute;top:calc(1.6*var(--u));right:calc(1.6*var(--u));width:calc(6.5*var(--u));height:calc(6.5*var(--u));border-radius:50%;border:0;background:rgba(11,20,51,.7);color:var(--ink);display:grid;place-items:center;cursor:pointer}
 .gear svg{width:55%;height:55%}
-.live{position:absolute;top:2.2cqw;left:2.6cqw;display:flex;gap:1.4cqw;align-items:center;font:600 2.2cqw "Red Hat Text"}
-.live b{background:var(--r);color:#fff;padding:.5cqw 1.3cqw;border-radius:.8cqw}
-.live b::before{content:"";display:inline-block;width:1.2cqw;height:1.2cqw;border-radius:50%;background:#fff;margin-right:.8cqw;vertical-align:.1cqw;animation:p 1.6s infinite}
+.live{position:absolute;top:calc(2.2*var(--u));left:calc(2.6*var(--u));display:flex;gap:calc(1.4*var(--u));align-items:center;font:600 calc(2.2*var(--u)) "Red Hat Text"}
+.live b{background:var(--r);color:#fff;padding:calc(.5*var(--u)) calc(1.3*var(--u));border-radius:calc(.8*var(--u))}
+.live b::before{content:"";display:inline-block;width:calc(1.2*var(--u));height:calc(1.2*var(--u));border-radius:50%;background:#fff;margin-right:calc(.8*var(--u));vertical-align:calc(.1*var(--u));animation:p 1.6s infinite}
 @keyframes p{50%{opacity:.25}}
 @media(prefers-reduced-motion:reduce){.live b::before{animation:none}}
 /* 4 Spotify */
-.sp{display:grid;grid-template-rows:auto auto auto;gap:1.4cqw}
-.sp .row{display:grid;grid-template-columns:11cqw 1fr;gap:2cqw;align-items:center}
-.cover{width:11cqw;aspect-ratio:1;border-radius:1.4cqw;background:var(--line) center/cover no-repeat}
-.spcon{font:700 2.8cqw "Red Hat Display";border:0;border-radius:5cqw;padding:2.2cqw 3cqw;background:var(--sp);color:#06200f;cursor:pointer;justify-self:center}
-.sptr{font:700 2.2cqw "Red Hat Display";border:0;border-radius:3cqw;padding:1cqw 2cqw;background:var(--r);color:#fff;cursor:pointer}
+.sp{display:grid;grid-template-rows:auto auto auto;gap:calc(1.4*var(--u))}
+.sp .row{display:grid;grid-template-columns:calc(11*var(--u)) 1fr;gap:calc(2*var(--u));align-items:center}
+.cover{width:calc(11*var(--u));aspect-ratio:1;border-radius:calc(1.4*var(--u));background:var(--line) center/cover no-repeat}
+.spcon{font:700 calc(2.8*var(--u)) "Red Hat Display";border:0;border-radius:calc(5*var(--u));padding:calc(2.2*var(--u)) calc(3*var(--u));background:var(--sp);color:#06200f;cursor:pointer;justify-self:center}
+.sptr{font:700 calc(2.2*var(--u)) "Red Hat Display";border:0;border-radius:calc(3*var(--u));padding:calc(1*var(--u)) calc(2*var(--u));background:var(--r);color:#fff;cursor:pointer}
 .sp.off .ctl,.sp.off .bar,.sp.off .times{opacity:.35;pointer-events:none}
-.title{font:700 2.9cqw/1.15 "Red Hat Display";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.artist{font-size:2.2cqw;color:var(--mute);margin-top:.4cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar{height:.8cqw;background:var(--line);border-radius:1cqw}
-.bar i{display:block;height:100%;width:38%;background:var(--sp);border-radius:1cqw}
-.times{display:flex;justify-content:space-between;font-size:1.9cqw;color:var(--mute);margin-top:.5cqw}
-.ctl{display:flex;gap:2cqw;justify-content:center;align-items:center}
-.ctl button{width:8.5cqw;height:8.5cqw;border-radius:50%;border:0;background:var(--line);color:var(--ink);display:grid;place-items:center;cursor:pointer}
-.ctl button.play{background:var(--sp);color:#06200f;width:10.5cqw;height:10.5cqw}
+.title{font:700 calc(2.9*var(--u))/1.15 "Red Hat Display";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.artist{font-size:calc(2.2*var(--u));color:var(--mute);margin-top:calc(.4*var(--u));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:calc(.8*var(--u));background:var(--line);border-radius:calc(1*var(--u))}
+.bar i{display:block;height:100%;width:38%;background:var(--sp);border-radius:calc(1*var(--u))}
+.times{display:flex;justify-content:space-between;font-size:calc(1.9*var(--u));color:var(--mute);margin-top:calc(.5*var(--u))}
+.ctl{display:flex;gap:calc(2*var(--u));justify-content:center;align-items:center}
+.ctl button{width:calc(8.5*var(--u));height:calc(8.5*var(--u));border-radius:50%;border:0;background:var(--line);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.ctl button.play{background:var(--sp);color:#06200f;width:calc(10.5*var(--u));height:calc(10.5*var(--u))}
 .ctl svg{width:42%;height:42%}
 /* 5 Kalender */
 .cal{display:grid;grid-template-rows:auto 1fr;padding-bottom:0}
-.cal h2{margin-bottom:1cqw}
-.plus{width:6cqw;height:6cqw;border-radius:50%;border:0;background:var(--t);color:#062226;font:700 4cqw/1 "Red Hat Display";cursor:pointer;display:grid;place-items:center}
-.calscroll{height:27cqw;overflow-y:auto;overscroll-behavior:contain;padding-bottom:2cqw;scrollbar-width:none;-webkit-mask:linear-gradient(#000 85%,transparent)}
+.cal h2{margin-bottom:calc(1*var(--u))}
+.plus{width:calc(6*var(--u));height:calc(6*var(--u));border-radius:50%;border:0;background:var(--t);color:#062226;font:700 calc(4*var(--u))/1 "Red Hat Display";cursor:pointer;display:grid;place-items:center}
+.calscroll{height:calc(27*var(--u));overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(2*var(--u));scrollbar-width:none;-webkit-mask:linear-gradient(#000 85%,transparent)}
 .calscroll::-webkit-scrollbar{display:none}
-.cal ul{list-style:none;margin:0;padding:0;display:grid;gap:.3cqw}
-.cal li button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:11cqw 1fr;gap:1.4cqw;align-items:baseline;font-size:2.4cqw;padding:.5cqw .6cqw;border-radius:1cqw;cursor:pointer}
+.cal ul{list-style:none;margin:0;padding:0;display:grid;gap:calc(.3*var(--u))}
+.cal li button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:calc(11*var(--u)) 1fr;gap:calc(1.4*var(--u));align-items:baseline;font-size:calc(2.4*var(--u));padding:calc(.5*var(--u)) calc(.6*var(--u));border-radius:calc(1*var(--u));cursor:pointer}
 .cal li button:active{background:var(--line)}
-.cal li time{font:700 2.4cqw "Red Hat Display";color:var(--t);white-space:nowrap}
+.cal li time{font:700 calc(2.4*var(--u)) "Red Hat Display";color:var(--t);white-space:nowrap}
 .cal li.done button{color:var(--mute);text-decoration:line-through}
 .cal li.done time{color:var(--mute)}
-.cal .day{font:600 2cqw "Red Hat Text";color:var(--mute);margin:1.4cqw 0 .3cqw;position:sticky;top:0;background:var(--card);padding:.4cqw 0}
+.cal .day{font:600 calc(2*var(--u)) "Red Hat Text";color:var(--mute);margin:calc(1.4*var(--u)) 0 calc(.3*var(--u));position:sticky;top:0;background:var(--card);padding:calc(.4*var(--u)) 0}
 .cal .day:first-child{margin-top:0}
-.cal .empty{font-size:2.2cqw;color:var(--mute);padding:.4cqw .6cqw}
+.cal .empty{font-size:calc(2.2*var(--u));color:var(--mute);padding:calc(.4*var(--u)) calc(.6*var(--u))}
 /* Termin-Fenster */
 .screen{position:relative}
 .modal{position:absolute;inset:0;background:rgba(5,10,28,.72);display:none;place-items:center;z-index:5000}
 .modal.on{display:grid}
-.dlg{width:80cqw;background:var(--card);border:1px solid var(--line);border-radius:2.6cqw;padding:4cqw;display:grid;gap:2.4cqw}
-.dlg h3{margin:0;font:700 3.6cqw "Red Hat Display"}
-.dlg label{display:grid;gap:.8cqw;font-size:2.2cqw;color:var(--mute)}
-.dlg input{font:500 3cqw "Red Hat Text";color:var(--ink);background:#0b1433;border:1px solid var(--line);border-radius:1.4cqw;padding:1.6cqw 2cqw;width:100%;color-scheme:dark}
-.dlg .row2{display:grid;grid-template-columns:1fr 1fr;gap:2cqw}
-.dlg .chk{display:flex;align-items:center;gap:1.6cqw;font-size:2.6cqw;color:var(--ink)}
-.dlg .chk input{width:4cqw;height:4cqw;accent-color:var(--t)}
-.dlg .acts{display:flex;gap:2cqw;justify-content:flex-end;margin-top:1cqw}
-.dlg .acts button{font:700 2.8cqw "Red Hat Display";border:0;border-radius:1.4cqw;padding:2cqw 3.6cqw;cursor:pointer;background:var(--line);color:var(--ink)}
+.dlg{width:calc(80*var(--u));background:var(--card);border:1px solid var(--line);border-radius:calc(2.6*var(--u));padding:calc(4*var(--u));display:grid;gap:calc(2.4*var(--u))}
+.dlg h3{margin:0;font:700 calc(3.6*var(--u)) "Red Hat Display"}
+.dlg label{display:grid;gap:calc(.8*var(--u));font-size:calc(2.2*var(--u));color:var(--mute)}
+.dlg input{font:500 calc(3*var(--u)) "Red Hat Text";color:var(--ink);background:#0b1433;border:1px solid var(--line);border-radius:calc(1.4*var(--u));padding:calc(1.6*var(--u)) calc(2*var(--u));width:100%;color-scheme:dark}
+.dlg .row2{display:grid;grid-template-columns:1fr 1fr;gap:calc(2*var(--u))}
+.dlg .chk{display:flex;align-items:center;gap:calc(1.6*var(--u));font-size:calc(2.6*var(--u));color:var(--ink)}
+.dlg .chk input{width:calc(4*var(--u));height:calc(4*var(--u));accent-color:var(--t)}
+.dlg .acts{display:flex;gap:calc(2*var(--u));justify-content:flex-end;margin-top:calc(1*var(--u))}
+.dlg .acts button{font:700 calc(2.8*var(--u)) "Red Hat Display";border:0;border-radius:calc(1.4*var(--u));padding:calc(2*var(--u)) calc(3.6*var(--u));cursor:pointer;background:var(--line);color:var(--ink)}
 .dlg .acts .save{background:var(--t);color:#062226}
 .dlg .acts .del{background:transparent;color:var(--r);margin-right:auto;padding-left:0}
 /* 6 Notizen */
-.notes form{display:grid;grid-template-columns:1fr 18cqw;gap:1.6cqw}
-.notes textarea{font:500 3.4cqw/1.35 "Red Hat Text";color:var(--ink);background:#0b1433;border:.25cqw dashed var(--line);border-radius:1.6cqw;padding:2cqw 2.4cqw;width:100%;height:21cqw;resize:none}
+.notes form{display:grid;grid-template-columns:1fr calc(18*var(--u));gap:calc(1.6*var(--u))}
+.notes textarea{font:500 calc(3.4*var(--u))/1.35 "Red Hat Text";color:var(--ink);background:#0b1433;border:calc(.25*var(--u)) dashed var(--line);border-radius:calc(1.6*var(--u));padding:calc(2*var(--u)) calc(2.4*var(--u));width:100%;height:calc(21*var(--u));resize:none}
 .notes textarea::placeholder{color:var(--mute)}
-.notes form button{font:700 2.8cqw "Red Hat Display";border:0;border-radius:1.6cqw;background:var(--t);color:#062226;cursor:pointer;transition:opacity .2s}
+.notes form button{font:700 calc(2.8*var(--u)) "Red Hat Display";border:0;border-radius:calc(1.6*var(--u));background:var(--t);color:#062226;cursor:pointer;transition:opacity .2s}
 .notes form button:disabled{background:var(--line);color:var(--mute);cursor:default}
-.ok{font-size:2.2cqw;color:var(--t);margin-top:1.2cqw;min-height:2.8cqw}
-button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-offset:.4cqw}
-.note{font-size:1.8cqw;color:var(--mute);text-align:center;margin:-.6cqw 0 0}
+.ok{font-size:calc(2.2*var(--u));color:var(--t);margin-top:calc(1.2*var(--u));min-height:calc(2.8*var(--u))}
+button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y);outline-offset:calc(.4*var(--u))}
+.note{font-size:calc(1.8*var(--u));color:var(--mute);text-align:center;margin:-calc(.6*var(--u)) 0 0}
+
+/* Querformat: drei Spalten, gleiche Elementgröße wie hochkant */
+@media (orientation:landscape){
+  :root{--u:calc(min(100vw/1.6667,100vh)/100)}
+  .screen{width:min(100vw,calc(100vh*1.6667));aspect-ratio:1.6667;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
+    grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"top cam cal" "hrs cam cal" "radar cam cal" "radar sp notes"}
+  .two{display:contents}
+  .top{grid-area:top}.hrs{grid-area:hrs}.radar{grid-area:radar}.cam{grid-area:cam}.sp{grid-area:sp}.cal{grid-area:cal;min-height:0}.notes{grid-area:notes}
+  .calscroll{height:auto;min-height:0}
+  .clock{font-size:calc(11*var(--u))}.temp{font-size:calc(8*var(--u))}
+  .notes textarea{height:calc(14*var(--u))}
+}
 </style>
 </head>
 <body>
@@ -144,7 +156,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
   </header>
 
   <div class="two">
-    <section class="card">
+    <section class="card hrs">
       <h2>Nächste Stunden <span>Regen mm</span></h2>
       <div class="hours" id="hours"></div>
     </section>
@@ -172,7 +184,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
         <div>
           <div class="title" id="sptitle">Spotify wird geladen …</div>
           <div class="artist" id="spart">&nbsp;</div>
-          <div class="bar" style="margin-top:1.2cqw"><i id="prog" style="width:0"></i></div>
+          <div class="bar" style="margin-top:calc(1.2*var(--u))"><i id="prog" style="width:0"></i></div>
           <div class="times num"><span id="pos">0:00</span><span id="dur">0:00</span></div>
         </div>
       </div>
@@ -184,7 +196,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
       <button class="spcon" id="spcon" hidden>Spotify verbinden</button>
     </section>
     <section class="card cal">
-      <h2>Familienkalender <span style="display:flex;gap:1.6cqw;align-items:center"><span id="kw">KW 48</span><button class="plus" id="plus" aria-label="Termin hinzufügen">+</button></span></h2>
+      <h2>Familienkalender <span style="display:flex;gap:calc(1.6*var(--u));align-items:center"><span id="kw">KW 48</span><button class="plus" id="plus" aria-label="Termin hinzufügen">+</button></span></h2>
       <div class="calscroll" id="cal"></div>
     </section>
   </div>
@@ -212,7 +224,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
       <label>Adresse des Rekorders<input id="camip" value="192.168.178.163" autocomplete="off"></label>
       <div class="row2"><label>Kanal<input id="camch" type="number" min="1" max="8" value="1"></label><label>Bilder pro Sekunde<input id="camfps" type="number" min="0.2" max="4" step="0.1" value="1"></label></div>
       <label>Benutzer<input id="camuser" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
-      <label>Passwort<span style="display:flex;gap:1.6cqw"><input id="campw" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button type="button" id="campwshow" style="font:600 2.4cqw 'Red Hat Text';border:0;border-radius:1.4cqw;padding:0 2.4cqw;background:var(--line);color:var(--ink);white-space:nowrap">Zeigen</button></span></label>
+      <label>Passwort<span style="display:flex;gap:calc(1.6*var(--u))"><input id="campw" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button type="button" id="campwshow" style="font:600 calc(2.4*var(--u)) 'Red Hat Text';border:0;border-radius:calc(1.4*var(--u));padding:0 calc(2.4*var(--u));background:var(--line);color:var(--ink);white-space:nowrap">Zeigen</button></span></label>
       <div class="ok" style="color:var(--mute)">Die Zugangsdaten bleiben nur auf diesem Tablet gespeichert.</div>
       <div class="acts"><button type="button" class="del" id="camdel">Entfernen</button><button type="button" id="camx">Abbrechen</button><button class="save">Speichern</button></div>
     </form>
@@ -223,7 +235,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='20';
+const BUILD='21';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
