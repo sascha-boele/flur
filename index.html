@@ -496,7 +496,7 @@ html.dark .wifidlg #wifiqr{background:#fff}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='60';
+const BUILD='61';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -894,7 +894,7 @@ pThumb();
   const season=()=>{const d=new Date(),m=d.getMonth(),t=d.getDate(),h=d.getHours();return ((m===10&&t>=20)||m===11||(m===0&&t<=6))&&h>=7&&h<23;};
   const sched=ms=>setTimeout(()=>{if(season()&&!document.hidden)run(pick());sched((20+Math.random()*25)*60000);},ms);
   sched((4+Math.random()*8)*60000);
-  const adv=$('advent');if(adv){adv.style.cursor='pointer';adv.addEventListener('click',()=>run(pick()));}
+  const adv=document.getElementById('advent');if(adv){adv.style.cursor='pointer';adv.addEventListener('click',()=>run(pick()));}
   window.xmasNow=run;})();
 </script>
 </body>
