@@ -125,6 +125,16 @@ input[type=range]{width:100%;accent-color:var(--t);height:calc(5*var(--u));margi
 button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y);outline-offset:calc(.4*var(--u))}
 .note{font-size:calc(1.8*var(--u));color:var(--mute);text-align:center;margin:-calc(.6*var(--u)) 0 0}
 
+.shopbtn{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:calc(2.4*var(--u));padding:calc(2.4*var(--u)) calc(2.8*var(--u));border-radius:calc(1.8*var(--u));background:var(--line);cursor:pointer;font:700 calc(3.6*var(--u)) "Red Hat Display"}
+.shopbtn:active{background:#2c3c82}
+.shopbtn svg{width:calc(6*var(--u));height:calc(6*var(--u));color:var(--t);flex:none}
+.shopbtn small{display:block;font:500 calc(2.2*var(--u)) "Red Hat Text";color:var(--mute);margin-top:calc(.4*var(--u))}
+.notes .ok:empty{display:none}
+.shopdlg{width:calc(92*var(--u));height:88%;grid-template-rows:auto 1fr auto auto}
+.shopdlg textarea{font:500 calc(5*var(--u))/1.35 "Red Hat Text";color:var(--ink);background:#0b1433;border:calc(.3*var(--u)) dashed var(--t);border-radius:calc(1.8*var(--u));padding:calc(3*var(--u));width:100%;height:100%;resize:none}
+.shopdlg textarea::placeholder{color:var(--mute)}
+.shopdlg .acts button{font-size:calc(3.4*var(--u));padding:calc(2.6*var(--u)) calc(5*var(--u))}
+.shopdlg .save:disabled{background:var(--line);color:var(--mute)}
 /* Querformat: drei Spalten, gleiche Elementgröße wie hochkant */
 @media (orientation:landscape){
   :root{--u:calc(min(100vw/1.6667,100vh)/100)}
@@ -134,8 +144,6 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .top{grid-area:top}.hrs{grid-area:hrs}.radar{grid-area:radar}.cam{grid-area:cam}.sp{grid-area:sp}.cal{grid-area:cal;min-height:0}.notes{grid-area:notes}
   .calscroll{height:auto;min-height:0}
   .clock{font-size:calc(11*var(--u))}.temp{font-size:calc(8*var(--u))}
-  .notes textarea{height:calc(16*var(--u));font-size:calc(2.8*var(--u))}
-  .notes form{grid-template-columns:1fr calc(15*var(--u))}
   .top{grid-template-columns:1fr;gap:calc(1.2*var(--u))}
   .now{justify-content:flex-start;text-align:left;flex-direction:row-reverse}
   .date{white-space:nowrap}
@@ -147,7 +155,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .ctl button{width:calc(7*var(--u));height:calc(7*var(--u))}
   .ctl button.play{width:calc(8.5*var(--u));height:calc(8.5*var(--u))}
   .spcon{grid-column:1/-1}
-  .notes textarea{height:calc(13*var(--u))}
+  .shopdlg{width:calc(130*var(--u))}
   .top .now svg{width:calc(8*var(--u));height:calc(8*var(--u))}
 }
 </style>
@@ -216,9 +224,8 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   </div>
 
   <section class="card notes">
-    <h2>Einkaufszettel <span>im Familienkalender</span></h2>
-    <form id="add"><textarea id="item" placeholder="Mit dem Stift hineinschreiben – mehrere Artikel mit Komma trennen" aria-label="Einkaufszettel"></textarea><button id="addb" disabled>Hinzu&shy;fügen</button></form>
-    <div class="ok" id="ok" aria-live="polite"></div>
+    <button class="shopbtn" id="shopopen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Einkaufszettel<small>Antippen und mit dem Stift schreiben</small></span></button>
+    <div class="ok" id="okcard" aria-live="polite"></div>
   </section>
   
   <div class="modal" id="modal">
@@ -243,13 +250,21 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
       <div class="acts"><button type="button" class="del" id="camdel">Entfernen</button><button type="button" id="camx">Abbrechen</button><button class="save">Speichern</button></div>
     </form>
   </div>
+  <div class="modal" id="shopmodal">
+    <form class="dlg shopdlg" id="add">
+      <h3>Einkaufszettel <span style="font:500 calc(2.2*var(--u)) 'Red Hat Text';color:var(--mute)">· mehrere Artikel mit Komma trennen</span></h3>
+      <textarea id="item" aria-label="Einkaufszettel" placeholder="Hier mit dem Stift schreiben …"></textarea>
+      <div class="ok" id="ok" aria-live="polite"></div>
+      <div class="acts"><button type="button" id="shopx">Schließen</button><button class="save" id="addb" disabled>Hinzufügen</button></div>
+    </form>
+  </div>
 </main>
 
 <script>
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='23';
+const BUILD='24';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -406,13 +421,16 @@ setInterval(()=>{if(sp.on)spShow();},1000);
 
 
 const ta=$('item'),ab=$('addb');let okT;
+const shopClose=()=>$('shopmodal').classList.remove('on');
+$('shopopen').addEventListener('click',()=>{$('ok').textContent='';ab.disabled=!ta.value.trim();$('shopmodal').classList.add('on');});
+$('shopx').addEventListener('click',shopClose);
 ta.addEventListener('input',()=>{ab.disabled=!ta.value.trim();});
 $('add').addEventListener('submit',e=>{e.preventDefault();
   const lines=ta.value.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean);if(!lines.length)return;
   ab.disabled=true;$('ok').textContent='Wird eingetragen …';
-  api({action:'shop_add',items:lines.join('\n')}).then(()=>{$('ok').textContent='✓ '+lines.join(', ')+' steht auf dem Einkaufszettel';ta.value='';})
-    .catch(()=>{$('ok').textContent='Hat nicht geklappt – bitte nochmal tippen';ab.disabled=false;})
-    .finally(()=>{clearTimeout(okT);okT=setTimeout(()=>{$('ok').textContent='';},8000);});});
+  api({action:'shop_add',items:lines.join('\n')}).then(()=>{const m='✓ '+lines.join(', ')+' steht auf dem Einkaufszettel';ta.value='';$('ok').textContent=m;$('okcard').textContent=m;
+      setTimeout(shopClose,1200);clearTimeout(okT);okT=setTimeout(()=>{$('okcard').textContent='';},10000);})
+    .catch(()=>{$('ok').textContent='Hat nicht geklappt – bitte nochmal tippen';ab.disabled=false;});});
 
 // Kamera: Reolink-Rekorder im Heimnetz, Einzelbilder per Snap-Befehl (Zugang nur lokal gespeichert)
 let cam=null,camT,camErr=0,camBusy=false,camProto='http',camStop=false;
