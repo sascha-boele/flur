@@ -134,7 +134,12 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .top{grid-area:top}.hrs{grid-area:hrs}.radar{grid-area:radar}.cam{grid-area:cam}.sp{grid-area:sp}.cal{grid-area:cal;min-height:0}.notes{grid-area:notes}
   .calscroll{height:auto;min-height:0}
   .clock{font-size:calc(11*var(--u))}.temp{font-size:calc(8*var(--u))}
-  .notes textarea{height:calc(14*var(--u))}
+  .notes textarea{height:calc(16*var(--u));font-size:calc(2.8*var(--u))}
+  .notes form{grid-template-columns:1fr calc(15*var(--u))}
+  .top{grid-template-columns:1fr;gap:calc(1.2*var(--u))}
+  .now{justify-content:flex-start;text-align:left;flex-direction:row-reverse}
+  .date{white-space:nowrap}
+  .hours .h:nth-child(n+7){display:none}
 }
 </style>
 </head>
@@ -235,7 +240,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='21';
+const BUILD='22';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -417,7 +422,7 @@ function camProbe(){ // Diagnose: ist der Rekorder überhaupt erreichbar? (Logo 
     if(ok){clearTimeout(camT);camStop=true;}
     camMsg(ok?'Rekorder ist erreichbar, aber das Kamerabild wird abgelehnt – Benutzer/Passwort oder Kanal prüfen. (Weitere Versuche angehalten, damit der Rekorder den Zugang nicht sperrt.)'
       :'Rekorder nicht erreichbar (http: '+res.http+', https: '+res.https+'). Adresse prüfen.');}}
-const camDbg=t=>{$('camdbg').textContent='v'+BUILD+' · '+t+' · Fehler '+camErr;};
+const camDbg=t=>{$('camdbg').textContent=$('camimg').hidden?('v'+BUILD+' · '+t+' · Fehler '+camErr):'';};
 function camTick(){clearTimeout(camT);if(camStop)return;if(!cam){camMsg('Kamera noch nicht eingerichtet – oben rechts auf das Zahnrad tippen');$('camimg').hidden=true;$('camlive').hidden=true;return;}
   camDbg('Anfrage '+camProto+' läuft …');
   const im=new Image();im.referrerPolicy='no-referrer';const t0=Date.now();let done=false;
