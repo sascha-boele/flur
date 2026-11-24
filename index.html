@@ -157,7 +157,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
   </div>
 
   <section class="card cam">
-    <img id="camimg" alt="Kamerabild Haustür" hidden>
+    <img id="camimg" alt="Kamerabild Haustür" referrerpolicy="no-referrer" hidden>
     <div class="cammsg" id="cammsg">Kamera wird geladen …</div>
     <div class="camdbg" id="camdbg">Skript startet …</div>
     <div class="live"><b id="camlive" hidden>LIVE</b><span class="tag">Haustür</span></div>
@@ -223,7 +223,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='19';
+const BUILD='20';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -393,7 +393,9 @@ let cam=null,camT,camErr=0,camBusy=false,camProto='http',camStop=false;
 try{cam=JSON.parse(ls.get('flurcam')||'null');}catch(e){}
 if(cam&&/^https:/i.test(cam.ip||''))camProto='https';
 const camHost=()=>String(cam.ip||'').trim().replace(/^[a-z]+:\/\//i,'').replace(/\/.*$/,'');
-const camUrl=()=>camProto+'://'+camHost()+'/cgi-bin/api.cgi?'+new URLSearchParams({cmd:'Snap',channel:String((+cam.ch||1)-1),rs:String(Date.now()),user:cam.user,password:cam.pw});
+// Reolink dekodiert Sonderzeichen nicht immer: nur das Nötigste kodieren (& # % + Leerzeichen), Rest roh wie in der Adresszeile
+const camEnc=v=>String(v).replace(/[%&#+ ]/g,c=>'%'+c.charCodeAt(0).toString(16).toUpperCase().padStart(2,'0'));
+const camUrl=()=>camProto+'://'+camHost()+'/cgi-bin/api.cgi?cmd=Snap&channel='+((+cam.ch||1)-1)+'&rs='+Date.now()+'&user='+camEnc(cam.user)+'&password='+camEnc(cam.pw);
 const camMsg=t=>{$('cammsg').textContent=t;$('cammsg').hidden=!t;};
 function camProbe(){ // Diagnose: ist der Rekorder überhaupt erreichbar? (Logo der Weboberfläche)
   const res={};let n=0;['http','https'].forEach(p=>{const i=new Image();const to=setTimeout(()=>{i.src='';fin(p,'keine Antwort');},8000);
@@ -406,7 +408,7 @@ function camProbe(){ // Diagnose: ist der Rekorder überhaupt erreichbar? (Logo 
 const camDbg=t=>{$('camdbg').textContent='v'+BUILD+' · '+t+' · Fehler '+camErr;};
 function camTick(){clearTimeout(camT);if(camStop)return;if(!cam){camMsg('Kamera noch nicht eingerichtet – oben rechts auf das Zahnrad tippen');$('camimg').hidden=true;$('camlive').hidden=true;return;}
   camDbg('Anfrage '+camProto+' läuft …');
-  const im=new Image();const t0=Date.now();let done=false;
+  const im=new Image();im.referrerPolicy='no-referrer';const t0=Date.now();let done=false;
   const fail=()=>{if(done)return;done=true;clearTimeout(wd);camErr++;$('camlive').hidden=true;if(camErr%2===0)camProto=camProto==='http'?'https':'http';
     if(camErr===4){$('camimg').hidden=true;camMsg('Prüfe Verbindung zum Rekorder …');camProbe();}
     else if(camErr<4&&$('camimg').hidden)camMsg('Verbinde ('+camProto+', Versuch '+camErr+') …');
