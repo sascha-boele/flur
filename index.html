@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flur-Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;800&family=Red+Hat+Text:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* VOICE: ruhig, auf einen Blick lesbar im Vorbeigehen, nachts nicht grell
@@ -41,7 +43,13 @@ h2{font:600 2.2cqw/1 "Red Hat Text",sans-serif;color:var(--mute);margin:0 0 1.6c
 /* 2 Radar */
 .radar{padding:0;display:grid;grid-template-rows:1fr auto auto}
 .radar .fig{position:relative;min-height:22cqw}
-.radar svg{position:absolute;inset:0;width:100%;height:100%}
+#map{position:absolute;inset:0;background:#0e1430}
+.leaflet-container{font:1.6cqw "Red Hat Text",sans-serif}
+.leaflet-control-attribution{background:rgba(11,20,51,.6)!important;color:#6c76a8!important;font-size:1.3cqw!important;line-height:1.4}
+.leaflet-control-attribution a{color:#8d97c4!important}
+.pin{width:3cqw!important;height:3cqw!important;margin:-1.5cqw 0 0 -1.5cqw!important;border-radius:50%;background:#fff;box-shadow:0 0 0 1.2cqw rgba(255,255,255,.25)}
+.pinl{font:700 2.4cqw "Red Hat Display";color:#fff;text-shadow:0 0 .6cqw #000;white-space:nowrap;margin:-1.6cqw 0 0 2.6cqw!important;width:auto!important;height:auto!important}
+.stale{color:var(--y)}
 .radar h2{position:absolute;top:2cqw;left:2cqw;right:2cqw;z-index:2;font-size:1.9cqw}
 .slider{display:grid;grid-template-columns:auto 1fr auto;gap:1.4cqw;align-items:center;padding:1cqw 2cqw 1.6cqw}
 .slider span{font:600 1.9cqw "Red Hat Text";color:var(--mute);white-space:nowrap}
@@ -118,11 +126,11 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
     </div>
     <div class="now">
       <div>
-        <div class="temp num">6°</div>
-        <div class="cond">Leichter Regen · 3° / 8°</div>
+        <div class="temp num" id="wt">–°</div>
+        <div class="cond" id="wc">Wetter wird geladen …</div>
         <div class="cond">Lingen (Ems)</div>
       </div>
-      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="24" cy="22" r="11" fill="#f7e463"/><path d="M20 46h28a10 10 0 0 0 0-20 14 14 0 0 0-27 3 9 9 0 0 0-1 17z" fill="#dfe5f7"/><path d="M26 51l-3 7M36 51l-3 7M46 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/></svg>
+      <span id="wi" style="display:contents"></span>
     </div>
   </header>
 
@@ -133,9 +141,9 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
     </section>
     <section class="card radar">
       <h2><span class="tag">Regenradar DWD</span><span class="tag num" id="rtime">jetzt</span></h2>
-      <div class="fig"><svg id="map" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"></svg></div>
+      <div class="fig"><div id="map"></div></div>
       <div class="legend"></div>
-      <div class="slider"><span>−1 h</span><input type="range" id="rng" min="-60" max="120" step="10" value="0" aria-label="Zeit Regenradar"><span>+2 h</span></div>
+      <div class="slider"><span>−1 h</span><input type="range" id="rng" min="-60" max="120" step="5" value="0" aria-label="Zeit Regenradar"><span>+2 h</span></div>
     </section>
   </div>
 
@@ -200,7 +208,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='4';
+const BUILD='5';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD)location.replace('./?v='+m[1]);}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -209,8 +217,33 @@ const tick=()=>{const d=new Date();$('clock').textContent=pad(d.getHours())+':'+
   $('date').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});};
 tick();setInterval(tick,10000);
 
-const hrs=[[14,6,0.4],[15,6,0.8],[16,5,1.2],[17,5,0.6],[18,4,0.2],[19,4,0],[20,3,0],[21,3,0.1]];
-$('hours').innerHTML=hrs.map(([h,t,r])=>`<div class="h"><b>${h} Uhr</b><i><span style="width:${Math.min(100,r/1.2*100)}%"></span></i><em>${t}°</em><small>${r?r.toFixed(1).replace('.',','):'–'}</small></div>`).join('');
+// Wetter: Open-Meteo (DWD-Modelle), Lingen
+const LAT=52.523,LON=7.316;
+const WTXT={0:'Klar',1:'Überwiegend klar',2:'Teils bewölkt',3:'Bedeckt',45:'Nebel',48:'Reifnebel',51:'Leichter Niesel',53:'Niesel',55:'Starker Niesel',56:'Gefrierender Niesel',57:'Gefrierender Niesel',
+  61:'Leichter Regen',63:'Regen',65:'Starker Regen',66:'Gefrierender Regen',67:'Gefrierender Regen',71:'Leichter Schneefall',73:'Schneefall',75:'Starker Schneefall',77:'Schneegriesel',
+  80:'Regenschauer',81:'Regenschauer',82:'Starke Schauer',85:'Schneeschauer',86:'Schneeschauer',95:'Gewitter',96:'Gewitter mit Hagel',99:'Gewitter mit Hagel'};
+const icon=(c,day)=>{const sun=day?'<circle cx="24" cy="22" r="11" fill="#f7e463"/>':'<path d="M30 10a13 13 0 1 0 10 22 11 11 0 0 1-10-22z" fill="#dfe5f7"/>';
+  const cloud=(f='#dfe5f7')=>`<path d="M20 46h28a10 10 0 0 0 0-20 14 14 0 0 0-27 3 9 9 0 0 0-1 17z" fill="${f}"/>`;
+  const drops='<path d="M26 51l-3 7M36 51l-3 7M46 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/>';
+  const flakes='<g fill="#fff"><circle cx="25" cy="54" r="2.5"/><circle cx="35" cy="58" r="2.5"/><circle cx="45" cy="54" r="2.5"/></g>';
+  let b;if(c===0)b=day?'<circle cx="32" cy="32" r="14" fill="#f7e463"/>':'<path d="M36 14a18 18 0 1 0 14 30 15 15 0 0 1-14-30z" fill="#dfe5f7"/>';
+  else if(c<=2)b=sun+cloud();else if(c===3)b=cloud('#aab4d6');else if(c<=48)b='<path d="M12 28h40M8 36h48M14 44h36" stroke="#aab4d6" stroke-width="4" stroke-linecap="round"/>';
+  else if(c>=71&&c<=77||c===85||c===86)b=cloud()+flakes;else if(c>=95)b=cloud('#8d97c4')+'<path d="M34 46l-6 10h7l-4 8" stroke="#f7e463" stroke-width="3" fill="none" stroke-linejoin="round"/>';
+  else b=(c>=80?sun:'')+cloud()+drops;return `<svg viewBox="0 0 64 64" aria-hidden="true">${b}</svg>`;};
+const fmt=v=>v.toFixed(1).replace('.',',');
+async function loadWeather(){try{
+  const u=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,precipitation&daily=temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin&forecast_days=2`;
+  const w=await (await fetch(u)).json();const c=w.current;
+  $('wt').textContent=Math.round(c.temperature_2m)+'°';
+  $('wc').textContent=(WTXT[c.weather_code]||'')+' · '+Math.round(w.daily.temperature_2m_min[0])+'° / '+Math.round(w.daily.temperature_2m_max[0])+'°';
+  $('wi').innerHTML=icon(c.weather_code,c.is_day);
+  const h=w.hourly,now=new Date(),key=iso(now)+'T'+pad(now.getHours())+':00';
+  let i=h.time.indexOf(key);if(i<0)i=0;i+=1;
+  const rows=h.time.slice(i,i+8).map((t,k)=>[+t.slice(11,13),Math.round(h.temperature_2m[i+k]),h.precipitation[i+k]||0]);
+  const mx=Math.max(1,...rows.map(r=>r[2]));
+  $('hours').innerHTML=rows.map(([hh,t,r])=>`<div class="h"><b>${hh} Uhr</b><i><span style="width:${r/mx*100}%"></span></i><em>${t}°</em><small>${r>=.05?fmt(r):'–'}</small></div>`).join('');
+}catch(e){$('wc').textContent='Wetter nicht erreichbar';}}
+loadWeather();setInterval(loadWeather,10*60000);
 
 // Kalender (Beispieldaten, Google-Anbindung folgt)
 const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -247,20 +280,28 @@ $('evf').addEventListener('submit',ev=>{ev.preventDefault();const a=$('eva').che
   const o={title:$('evt').value.trim(),date:$('evd').value,start:a?'':$('evs').value,end:a?'':$('eve').value};
   if(!o.title||!o.date)return;if(edit)Object.assign(edit,o);else evs.push({id:nid++,...o});closeDlg();renderCal();});
 
-const map=$('map');
-const cells=[[80,220,55,.9],[120,190,35,.6],[50,260,30,.5],[230,270,45,.7],[260,245,25,.95],[40,150,28,.4]];
-const col=v=>v>.85?'#e8452c':v>.7?'#f7e463':v>.5?'#4fc1c6':'#3b4fd8';
-const draw=m=>{const dx=m*.8,dy=-m*.45;
-  map.innerHTML=`<rect width="400" height="300" fill="#16224f"/>
-  <path d="M0 50 C90 30 150 80 200 60 S320 20 400 40" stroke="#2c3a78" stroke-width="2" fill="none"/>
-  <path d="M260 0 C280 70 250 140 290 200 S320 260 310 300" stroke="#2c3a78" stroke-width="2" stroke-dasharray="6 6" fill="none"/>
-  ${cells.map(([x,y,r,v])=>`<circle cx="${x+dx}" cy="${y+dy}" r="${r}" fill="${col(v)}" opacity=".55"/><circle cx="${x+dx}" cy="${y+dy}" r="${r*.5}" fill="${col(Math.min(1,v+.15))}" opacity=".7"/>`).join('')}
-  <circle cx="200" cy="150" r="6" fill="#fff"/><circle cx="200" cy="150" r="14" fill="none" stroke="#fff" stroke-width="2" opacity=".5"/>
-  <text x="212" y="145" fill="#fff" font-size="18" font-weight="700" font-family="Red Hat Display">Lingen</text>`;
-  const d=new Date(Date.now()+m*60000);
-  $('rtime').textContent=(m===0?'jetzt':(m>0?'+':'')+m+' min')+' · '+pad(d.getHours())+':'+pad(d.getMinutes()-d.getMinutes()%5);
-};
-draw(0);$('rng').addEventListener('input',e=>draw(+e.target.value));
+// Regenradar: DWD-Niederschlagsradar (WMS) inkl. Nowcast bis +2 h
+const WMS='https://maps.dwd.de/geoserver/dwd/wms';
+let base=null,last=0,idle;
+const map=L.map('map',{zoomControl:false,attributionControl:true,dragging:true,scrollWheelZoom:false,doubleClickZoom:true,minZoom:6,maxZoom:10}).setView([LAT,LON],8);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',attribution:'© OSM, © CARTO, Radar © DWD',maxZoom:19}).addTo(map);
+const rad=L.tileLayer.wms(WMS,{layers:'dwd:Niederschlagsradar',format:'image/png',transparent:true,opacity:.8,version:'1.3.0',tileSize:512,zIndex:5}).addTo(map);
+L.marker([LAT,LON],{icon:L.divIcon({className:'pin'}),interactive:false}).addTo(map);
+L.marker([LAT,LON],{icon:L.divIcon({className:'pinl',html:'Lingen'}),interactive:false}).addTo(map);
+new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
+const setT=m=>{if(!base)return;const d=new Date(base.getTime()+m*60000);
+  rad.setParams({time:d.toISOString().replace('.000','')});
+  const lbl=m===0?'jetzt':(m>0?'Prognose +'+m+' min':m+' min');
+  $('rtime').textContent=lbl+' · '+pad(d.getHours())+':'+pad(d.getMinutes());};
+async function loadRadarTime(){try{
+  const t=await (await fetch('https://maps.dwd.de/geoserver/dwd/Niederschlagsradar/ows?service=WMS&version=1.3.0&request=GetCapabilities&t='+Date.now())).text();
+  const blk=t;
+  const m=blk.match(/name="REFERENCE_TIME" default="([^"]+)"/)||blk.match(/name="time"[^>]*>[^/]+\/([^/]+)\//);
+  const ref=new Date(m[1]);if(!base||ref>base){base=ref;setT(+$('rng').value);}
+}catch(e){if(!base){base=new Date(Math.floor((Date.now()-10*60000)/300000)*300000);setT(0);}}}
+loadRadarTime();setInterval(loadRadarTime,5*60000);
+$('rng').addEventListener('input',e=>{setT(+e.target.value);clearTimeout(idle);
+  idle=setTimeout(()=>{$('rng').value=0;setT(0);},120000);});
 
 let on=true,p=84;
 $('play').addEventListener('click',()=>{on=!on;$('play').setAttribute('aria-label',on?'Pause':'Abspielen');
