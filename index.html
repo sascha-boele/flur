@@ -70,6 +70,7 @@ input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
 .sp .row{display:grid;grid-template-columns:11cqw 1fr;gap:2cqw;align-items:center}
 .cover{width:11cqw;aspect-ratio:1;border-radius:1.4cqw;background:var(--line) center/cover no-repeat}
 .spcon{font:700 2.8cqw "Red Hat Display";border:0;border-radius:5cqw;padding:2.2cqw 3cqw;background:var(--sp);color:#06200f;cursor:pointer;justify-self:center}
+.sptr{font:700 2.2cqw "Red Hat Display";border:0;border-radius:3cqw;padding:1cqw 2cqw;background:var(--r);color:#fff;cursor:pointer}
 .sp.off .ctl,.sp.off .bar,.sp.off .times{opacity:.35;pointer-events:none}
 .title{font:700 2.9cqw/1.15 "Red Hat Display";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .artist{font-size:2.2cqw;color:var(--mute);margin-top:.4cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -168,7 +169,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 
   <div class="two">
     <section class="card sp">
-      <h2 style="margin:0">Spotify <span id="spdev"></span></h2>
+      <h2 style="margin:0"><span id="sphead" style="cursor:pointer">Spotify</span> <span id="spdev"></span><button class="sptr" id="sptr" hidden>Trennen</button></h2>
       <div class="row">
         <div class="cover" id="spcov" aria-hidden="true"></div>
         <div>
@@ -214,7 +215,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='8';
+const BUILD='9';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -360,6 +361,9 @@ $('play').addEventListener('click',()=>{sp.on?spCmd('/me/player/pause','PUT'):sp
 $('spnext').addEventListener('click',()=>spCmd('/me/player/next','POST'));
 $('spprev').addEventListener('click',()=>spCmd('/me/player/previous','POST'));
 $('spcon').addEventListener('click',spLogin);
+let trT;$('sphead').addEventListener('click',()=>{if(!ls.get('sprt'))return;$('sptr').hidden=false;$('spdev').hidden=true;clearTimeout(trT);
+  trT=setTimeout(()=>{$('sptr').hidden=true;$('spdev').hidden=false;},5000);});
+$('sptr').addEventListener('click',()=>{ls.set('sprt',null);spTok=null;$('sptr').hidden=true;$('spdev').hidden=false;spPoll();});
 setInterval(()=>{if(sp.on)spShow();},1000);
 (async()=>{const q=new URLSearchParams(location.search),code=q.get('code');
   if(code&&ls.get('spver')){try{await spToken({grant_type:'authorization_code',code,redirect_uri:SP_RED,code_verifier:ls.get('spver')});}catch(e){}
