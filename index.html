@@ -130,7 +130,17 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .shopbtn svg{width:calc(6*var(--u));height:calc(6*var(--u));color:var(--t);flex:none}
 .shopbtn small{display:block;font:500 calc(2.2*var(--u)) "Red Hat Text";color:var(--mute);margin-top:calc(.4*var(--u))}
 .notes .ok:empty{display:none}
-.shopdlg{width:calc(92*var(--u));height:88%;grid-template-rows:auto 1fr auto auto}
+.shopdlg{width:calc(92*var(--u));height:88%;grid-template-rows:auto auto 1fr auto auto auto}
+.chips{display:flex;flex-wrap:wrap;gap:calc(1.2*var(--u));min-height:calc(6*var(--u))}
+.chips button{font:600 calc(3*var(--u)) "Red Hat Text";border:0;border-radius:calc(4*var(--u));padding:calc(1.2*var(--u)) calc(2.4*var(--u));background:var(--t);color:#062226;cursor:pointer}
+.chips button::after{content:" ×";opacity:.6}
+.chiphint{font-size:calc(2.4*var(--u));color:var(--mute);align-self:center}
+.padwrap{position:relative;min-height:0;border:calc(.3*var(--u)) dashed var(--t);border-radius:calc(1.8*var(--u));background:#0b1433;overflow:hidden}
+#pad{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.padhint{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(3.4*var(--u));color:var(--mute);pointer-events:none}
+.cands{display:flex;flex-wrap:wrap;gap:calc(1.2*var(--u));min-height:calc(5*var(--u));align-items:center}
+.cands span{font-size:calc(2.2*var(--u));color:var(--mute)}
+.cands button{font:500 calc(2.8*var(--u)) "Red Hat Text";border:1px solid var(--line);border-radius:calc(1.4*var(--u));padding:calc(.8*var(--u)) calc(2*var(--u));background:transparent;color:var(--ink);cursor:pointer}
 .shopdlg textarea{font:500 calc(5*var(--u))/1.35 "Red Hat Text";color:var(--ink);background:#0b1433;border:calc(.3*var(--u)) dashed var(--t);border-radius:calc(1.8*var(--u));padding:calc(3*var(--u));width:100%;height:100%;resize:none}
 .shopdlg textarea::placeholder{color:var(--mute)}
 .shopdlg .acts button{font-size:calc(3.4*var(--u));padding:calc(2.6*var(--u)) calc(5*var(--u))}
@@ -252,10 +262,12 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   </div>
   <div class="modal" id="shopmodal">
     <form class="dlg shopdlg" id="add">
-      <h3>Einkaufszettel <span style="font:500 calc(2.2*var(--u)) 'Red Hat Text';color:var(--mute)">· mehrere Artikel mit Komma trennen</span></h3>
-      <textarea id="item" aria-label="Einkaufszettel" placeholder="Hier mit dem Stift schreiben …"></textarea>
+      <h3>Einkaufszettel <span style="font:500 calc(2.2*var(--u)) 'Red Hat Text';color:var(--mute)">· einen Artikel schreiben, kurz warten, nächsten schreiben</span></h3>
+      <div class="chips" id="shopitems"><span class="chiphint">Noch nichts erkannt</span></div>
+      <div class="padwrap"><canvas id="pad"></canvas><div class="padhint" id="padhint">Hier mit dem Stift schreiben</div></div>
+      <div class="cands" id="cands"></div>
       <div class="ok" id="ok" aria-live="polite"></div>
-      <div class="acts"><button type="button" id="shopx">Schließen</button><button class="save" id="addb" disabled>Hinzufügen</button></div>
+      <div class="acts"><button type="button" class="del" id="padclr">Feld leeren</button><button type="button" id="shopx">Schließen</button><button class="save" id="addb" disabled>Hinzufügen</button></div>
     </form>
   </div>
 </main>
@@ -264,7 +276,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='24';
+const BUILD='25';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -420,15 +432,36 @@ setInterval(()=>{if(sp.on)spShow();},1000);
   spPoll();})();
 
 
-const ta=$('item'),ab=$('addb');let okT;
+// Einkaufszettel: eigene Schreibfläche, Handschrift wird über Google Input Tools erkannt
+const ab=$('addb'),spad=$('pad'),pctx=spad.getContext('2d');let okT,items=[],ink=[],cur=null,recT,lastCands=[];
 const shopClose=()=>$('shopmodal').classList.remove('on');
-$('shopopen').addEventListener('click',()=>{$('ok').textContent='';ab.disabled=!ta.value.trim();$('shopmodal').classList.add('on');});
+const padSize=()=>{const r=spad.getBoundingClientRect(),d=devicePixelRatio||1;spad.width=r.width*d;spad.height=r.height*d;pctx.setTransform(d,0,0,d,0,0);
+  pctx.lineWidth=Math.max(3,r.width/150);pctx.lineCap='round';pctx.lineJoin='round';pctx.strokeStyle='#eef1fb';};
+const padClear=()=>{ink=[];pctx.clearRect(0,0,spad.width,spad.height);$('padhint').hidden=false;};
+const renderItems=()=>{$('shopitems').innerHTML=items.length?items.map((t,i)=>`<button type="button" data-i="${i}">${esc(t)}</button>`).join(''):'<span class="chiphint">Noch nichts erkannt</span>';ab.disabled=!items.length;};
+$('shopitems').addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(!b)return;items.splice(+b.dataset.i,1);renderItems();$('cands').innerHTML='';});
+$('cands').addEventListener('click',e=>{const b=e.target.closest('button[data-c]');if(!b)return;items[items.length-1]=lastCands[+b.dataset.c];renderItems();});
+const pos=e=>{const r=spad.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+spad.addEventListener('pointerdown',e=>{e.preventDefault();clearTimeout(recT);spad.setPointerCapture(e.pointerId);$('padhint').hidden=true;
+  const [x,y]=pos(e);cur=[[x],[y],[Date.now()]];ink.push(cur);pctx.beginPath();pctx.moveTo(x,y);});
+spad.addEventListener('pointermove',e=>{if(!cur)return;const [x,y]=pos(e);cur[0].push(x);cur[1].push(y);cur[2].push(Date.now());pctx.lineTo(x,y);pctx.stroke();});
+const up=()=>{if(!cur)return;cur=null;clearTimeout(recT);recT=setTimeout(recognize,1100);};
+spad.addEventListener('pointerup',up);spad.addEventListener('pointercancel',up);
+async function recognize(){if(!ink.length)return;const r=spad.getBoundingClientRect();const strokes=ink.map(s=>[s[0].map(Math.round),s[1].map(Math.round),s[2].map(t=>t-ink[0][2][0])]);
+  $('cands').innerHTML='<span>Erkenne …</span>';
+  try{const res=await (await fetch('https://inputtools.google.com/request?ime=handwriting&app=mobilesearch&cs=1&oe=UTF-8',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({options:'enable_pre_space',requests:[{writing_guide:{writing_area_width:Math.round(r.width),writing_area_height:Math.round(r.height)},ink:strokes,language:'de'}]})})).json();
+    const c=(res[0]==='SUCCESS'&&res[1][0][1])||[];if(!c.length)throw 0;
+    lastCands=c.slice(0,5).map(t=>t.trim()).filter(Boolean);items.push(lastCands[0]);renderItems();padClear();
+    $('cands').innerHTML=lastCands.length>1?'<span>Falsch erkannt? Stattdessen:</span>'+lastCands.slice(1).map((t,i)=>`<button type="button" data-c="${i+1}">${esc(t)}</button>`).join(''):'';}
+  catch(e){$('cands').innerHTML='<span>Nicht erkannt – bitte deutlicher schreiben oder „Feld leeren“</span>';}}
+$('padclr').addEventListener('click',()=>{clearTimeout(recT);padClear();$('cands').innerHTML='';});
+$('shopopen').addEventListener('click',()=>{$('ok').textContent='';items=[];renderItems();$('cands').innerHTML='';$('shopmodal').classList.add('on');requestAnimationFrame(()=>{padSize();padClear();});});
 $('shopx').addEventListener('click',shopClose);
-ta.addEventListener('input',()=>{ab.disabled=!ta.value.trim();});
-$('add').addEventListener('submit',e=>{e.preventDefault();
-  const lines=ta.value.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean);if(!lines.length)return;
+new ResizeObserver(()=>{if($('shopmodal').classList.contains('on')){padSize();padClear();}}).observe(spad);
+$('add').addEventListener('submit',e=>{e.preventDefault();if(!items.length)return;const lines=items.slice();
   ab.disabled=true;$('ok').textContent='Wird eingetragen …';
-  api({action:'shop_add',items:lines.join('\n')}).then(()=>{const m='✓ '+lines.join(', ')+' steht auf dem Einkaufszettel';ta.value='';$('ok').textContent=m;$('okcard').textContent=m;
+  api({action:'shop_add',items:lines.join('\n')}).then(()=>{const m='✓ '+lines.join(', ')+' steht auf dem Einkaufszettel';items=[];renderItems();$('ok').textContent=m;$('okcard').textContent=m;
       setTimeout(shopClose,1200);clearTimeout(okT);okT=setTimeout(()=>{$('okcard').textContent='';},10000);})
     .catch(()=>{$('ok').textContent='Hat nicht geklappt – bitte nochmal tippen';ab.disabled=false;});});
 
