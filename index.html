@@ -61,6 +61,7 @@ input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
 .cam{padding:0;min-height:30cqw}
 .cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cammsg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:6cqw;font-size:2.6cqw;color:var(--mute);background:#0e1430}
+.camdbg{position:absolute;left:2.6cqw;bottom:1.6cqw;font-size:1.7cqw;color:var(--mute);z-index:2}
 .gear{position:absolute;top:1.6cqw;right:1.6cqw;width:6.5cqw;height:6.5cqw;border-radius:50%;border:0;background:rgba(11,20,51,.7);color:var(--ink);display:grid;place-items:center;cursor:pointer}
 .gear svg{width:55%;height:55%}
 .live{position:absolute;top:2.2cqw;left:2.6cqw;display:flex;gap:1.4cqw;align-items:center;font:600 2.2cqw "Red Hat Text"}
@@ -158,6 +159,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
   <section class="card cam">
     <img id="camimg" alt="Kamerabild Haustür" hidden>
     <div class="cammsg" id="cammsg">Kamera wird geladen …</div>
+    <div class="camdbg" id="camdbg">Skript startet …</div>
     <div class="live"><b id="camlive" hidden>LIVE</b><span class="tag">Haustür</span></div>
     <button class="gear" id="camgear" aria-label="Kamera einstellen"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
   </section>
@@ -221,7 +223,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='16';
+const BUILD='17';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -401,15 +403,16 @@ function camProbe(){ // Diagnose: ist der Rekorder überhaupt erreichbar? (Logo 
     const ok=res.http==='erreichbar'||res.https==='erreichbar';
     camMsg(ok?'Rekorder ist erreichbar, aber das Kamerabild wird abgelehnt – Benutzer/Passwort oder Kanal prüfen.'
       :'Rekorder nicht erreichbar (http: '+res.http+', https: '+res.https+'). Adresse prüfen.');}}
+const camDbg=t=>{$('camdbg').textContent='v'+BUILD+' · '+t+' · Fehler '+camErr;};
 function camTick(){clearTimeout(camT);if(!cam){camMsg('Kamera noch nicht eingerichtet – oben rechts auf das Zahnrad tippen');$('camimg').hidden=true;$('camlive').hidden=true;return;}
-  if(document.hidden){camT=setTimeout(camTick,2000);return;}
+  camDbg('Anfrage '+camProto+' läuft …');
   const im=new Image();const t0=Date.now();let done=false;
   const fail=()=>{if(done)return;done=true;clearTimeout(wd);camErr++;$('camlive').hidden=true;if(camErr%2===0)camProto=camProto==='http'?'https':'http';
     if(camErr===4){$('camimg').hidden=true;camMsg('Prüfe Verbindung zum Rekorder …');camProbe();}
     else if(camErr<4&&$('camimg').hidden)camMsg('Verbinde ('+camProto+', Versuch '+camErr+') …');
     camT=setTimeout(camTick,camErr>=4?15000:1000);};
   const wd=setTimeout(()=>{im.src='';fail();},10000);
-  im.onload=()=>{if(done)return;done=true;clearTimeout(wd);$('camimg').src=im.src;$('camimg').hidden=false;$('camlive').hidden=false;camMsg('');camErr=0;
+  im.onload=()=>{if(done)return;done=true;clearTimeout(wd);$('camimg').src=im.src;$('camimg').hidden=false;$('camlive').hidden=false;camMsg('');camErr=0;$('camdbg').textContent='';
     camT=setTimeout(camTick,Math.max(150,1000/(+cam.fps||1)-(Date.now()-t0)));};
   im.onerror=fail;
   im.src=camUrl();}
