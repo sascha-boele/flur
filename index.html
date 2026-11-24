@@ -267,6 +267,23 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .radar{min-height:0}.radar .fig{min-height:0}
 }
 
+
+/* Glas-Look: weicher heller Raum im Hintergrund, Kacheln wie Milchglas */
+html,body{background:#e9e1d4}
+.screen{background:
+  radial-gradient(60% 70% at 12% 8%,rgba(255,255,255,.95),rgba(255,255,255,0) 70%),
+  radial-gradient(45% 55% at 88% 12%,rgba(255,250,240,.85),rgba(255,250,240,0) 70%),
+  radial-gradient(50% 45% at 80% 95%,rgba(47,93,80,.22),rgba(47,93,80,0) 70%),
+  radial-gradient(40% 40% at 45% 60%,rgba(184,137,45,.16),rgba(184,137,45,0) 70%),
+  radial-gradient(70% 50% at 20% 100%,rgba(205,184,150,.75),rgba(205,184,150,0) 70%),
+  linear-gradient(160deg,#f7f2ea 0%,#ece3d4 55%,#dccbb0 100%)}
+.card{background:rgba(255,255,255,.42);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);
+  border:1px solid rgba(255,255,255,.75);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 calc(1*var(--u)) calc(3.5*var(--u)) rgba(90,70,40,.12)}
+.cal .day{background:rgba(250,246,239,.9);border-radius:calc(.8*var(--u))}
+.shopbtn{background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.8)}
+.shopbtn:active{background:rgba(255,255,255,.8)}
+.hc i{background:rgba(255,255,255,.55)}
+.cammsg{background:rgba(255,255,255,.35)}
 </style>
 </head>
 <body>
@@ -396,7 +413,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='50';
+const BUILD='51';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
