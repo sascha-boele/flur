@@ -212,7 +212,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .paint .shopbtn.hasimg{padding:0;background:#fff center/cover no-repeat;min-height:calc(10*var(--u))}
 .paint .shopbtn.hasimg>*{display:none}
 /* Querformat: drei Spalten, gleiche Elementgröße wie hochkant */
-@media (orientation:landscape){
+@media all{ /* nur noch Querformat */
   :root{--u:calc(min(100vw/1.6667,100vh)/100)}
   .screen{width:min(100vw,calc(100vh*1.6667));aspect-ratio:1.6667;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
     grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top cam cal" "radar cam cal" "paint sp notes"}
@@ -360,7 +360,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='34';
+const BUILD='35';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
