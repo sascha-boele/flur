@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flur-Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;800&family=Red+Hat+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ruhig, auf einen Blick lesbar im Vorbeigehen, nachts nicht grell
+   IDEA: Wetterstation-Tafel neben der Haustür – Himmel oben, Haustür in der Mitte, Familie unten
+   PICTURE: Regenradar mit Zeitregler, breites Livebild der Haustür-Kamera
+   COLOUR and TYPE: Navy #0b1433, Wetterskala blau→türkis→gelb→rot, Spotify-Grün nur im Player; Red Hat Display/Text
+   LAYOUT: Hochformat 1200×2000 (0,6), in cqw skaliert; 1|2, 3, 4|5, 6 nach Skizze */
+:root{color-scheme:dark;--bg:#0b1433;--card:#121d45;--line:#22306a;--ink:#eef1fb;--mute:#8d97c4;--b:#3b4fd8;--t:#4fc1c6;--y:#f7e463;--r:#e8452c;--sp:#1ed760}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;background:#050a1c}
+body{display:grid;place-items:center;font-family:"Red Hat Text",system-ui,sans-serif;color:var(--ink);overflow:hidden}
+.screen{width:min(100vw,calc(100vh*0.6));aspect-ratio:.6;container-type:inline-size;background:var(--bg);display:grid;grid-template-rows:auto auto 1fr auto auto;gap:2.2cqw;padding:3.4cqw;overflow:hidden}
+.card{background:var(--card);border-radius:2.4cqw;padding:2.6cqw;position:relative;overflow:hidden}
+h2{font:600 2.2cqw/1 "Red Hat Text",sans-serif;color:var(--mute);margin:0 0 1.6cqw;display:flex;justify-content:space-between;align-items:center;gap:1cqw}
+.num{font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2.2cqw}
+.tag{background:rgba(11,20,51,.75);padding:.8cqw 1.4cqw;border-radius:1cqw;color:var(--ink)}
+/* Kopf */
+.top{display:grid;grid-template-columns:1fr auto;align-items:end;gap:3cqw;padding:.6cqw .6cqw 0}
+.clock{font:800 13cqw/.9 "Red Hat Display",sans-serif;letter-spacing:-.04em}
+.date{font:500 3cqw/1.2 "Red Hat Display",sans-serif;color:var(--mute);margin-top:1cqw}
+.now{display:flex;align-items:center;gap:2cqw;text-align:right}
+.now svg{width:11cqw;height:11cqw}
+.temp{font:800 9cqw/.9 "Red Hat Display",sans-serif}
+.cond{font-size:2.4cqw;color:var(--mute);margin-top:.6cqw}
+/* 1 Stunden */
+.hours{display:grid;gap:.75cqw}
+.h{display:grid;grid-template-columns:8.5cqw 1fr 5cqw 5.5cqw;gap:1.4cqw;align-items:center;font-size:2.3cqw}
+.h b{font-weight:600;color:var(--mute);white-space:nowrap}
+.h i{height:1.7cqw;border-radius:1cqw;background:#0b1433;overflow:hidden}
+.h i span{display:block;height:100%;border-radius:1cqw;background:linear-gradient(90deg,var(--b),var(--t))}
+.h em{font:700 2.5cqw "Red Hat Display";font-style:normal;text-align:right}
+.h small{font-size:2.1cqw;color:var(--t);text-align:right;white-space:nowrap}
+/* 2 Radar */
+.radar{padding:0;display:grid;grid-template-rows:1fr auto auto}
+.radar .fig{position:relative;min-height:22cqw}
+.radar svg{position:absolute;inset:0;width:100%;height:100%}
+.radar h2{position:absolute;top:2cqw;left:2cqw;right:2cqw;z-index:2;font-size:1.9cqw}
+.slider{display:grid;grid-template-columns:auto 1fr auto;gap:1.4cqw;align-items:center;padding:1cqw 2cqw 1.6cqw}
+.slider span{font:600 1.9cqw "Red Hat Text";color:var(--mute);white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
+.legend{height:.8cqw;background:linear-gradient(90deg,var(--b),var(--t),var(--y),var(--r))}
+/* 3 Kamera */
+.cam{padding:0;min-height:30cqw}
+.cam svg{position:absolute;inset:0;width:100%;height:100%}
+.live{position:absolute;top:2.2cqw;left:2.6cqw;display:flex;gap:1.4cqw;align-items:center;font:600 2.2cqw "Red Hat Text"}
+.live b{background:var(--r);color:#fff;padding:.5cqw 1.3cqw;border-radius:.8cqw}
+.live b::before{content:"";display:inline-block;width:1.2cqw;height:1.2cqw;border-radius:50%;background:#fff;margin-right:.8cqw;vertical-align:.1cqw;animation:p 1.6s infinite}
+@keyframes p{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.live b::before{animation:none}}
+/* 4 Spotify */
+.sp{display:grid;grid-template-rows:auto auto auto;gap:1.4cqw}
+.sp .row{display:grid;grid-template-columns:11cqw 1fr;gap:2cqw;align-items:center}
+.cover{width:11cqw;aspect-ratio:1;border-radius:1.4cqw;background:conic-gradient(from 210deg,#1ed760,#0b6b3a,#4fc1c6,#1ed760)}
+.title{font:700 2.9cqw/1.15 "Red Hat Display";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.artist{font-size:2.2cqw;color:var(--mute);margin-top:.4cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:.8cqw;background:var(--line);border-radius:1cqw}
+.bar i{display:block;height:100%;width:38%;background:var(--sp);border-radius:1cqw}
+.times{display:flex;justify-content:space-between;font-size:1.9cqw;color:var(--mute);margin-top:.5cqw}
+.ctl{display:flex;gap:2cqw;justify-content:center;align-items:center}
+.ctl button{width:8.5cqw;height:8.5cqw;border-radius:50%;border:0;background:var(--line);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.ctl button.play{background:var(--sp);color:#06200f;width:10.5cqw;height:10.5cqw}
+.ctl svg{width:42%;height:42%}
+/* 5 Kalender */
+.cal ul{list-style:none;margin:0;padding:0;display:grid;gap:.7cqw}
+.cal li{display:grid;grid-template-columns:11cqw 1fr;gap:1.4cqw;align-items:baseline;font-size:2.4cqw}
+.cal li time{font:700 2.4cqw "Red Hat Display";color:var(--t);white-space:nowrap}
+.cal li.done{color:var(--mute);text-decoration:line-through}
+.cal li.done time{color:var(--mute)}
+.cal .day{font:600 2cqw "Red Hat Text";color:var(--mute);margin:1.2cqw 0 .5cqw}
+.cal .day:first-of-type{margin-top:0}
+/* 6 Notizen */
+.notes form{display:grid;grid-template-columns:1fr auto;gap:1.6cqw;margin-bottom:1.6cqw}
+.notes input[type=text]{font:500 2.8cqw "Red Hat Text";color:var(--ink);background:#0b1433;border:.25cqw dashed var(--line);border-radius:1.4cqw;padding:1.6cqw 2cqw;width:100%}
+.notes input::placeholder{color:var(--mute)}
+.notes form button{font:700 2.4cqw "Red Hat Display";border:0;border-radius:1.4cqw;padding:0 3cqw;background:var(--t);color:#062226;cursor:pointer}
+.items{display:flex;flex-wrap:wrap;gap:1.2cqw;list-style:none;margin:0;padding:0}
+.items li button{font:500 2.5cqw "Red Hat Text";color:var(--ink);background:var(--line);border:0;border-radius:5cqw;padding:1.1cqw 2.2cqw;cursor:pointer;display:flex;gap:1cqw;align-items:center}
+.items li button::before{content:"";width:2cqw;height:2cqw;border-radius:50%;border:.3cqw solid var(--t)}
+.items li.done button{color:var(--mute);text-decoration:line-through}
+.items li.done button::before{background:var(--t)}
+button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-offset:.4cqw}
+.note{font-size:1.8cqw;color:var(--mute);text-align:center;margin:-.6cqw 0 0}
+</style>
+</head>
+<body>
+<main class="screen">
+  <header class="top">
+    <div>
+      <div class="clock num" id="clock">13:59</div>
+      <div class="date" id="date">Dienstag, 24. November</div>
+    </div>
+    <div class="now">
+      <div>
+        <div class="temp num">6°</div>
+        <div class="cond">Leichter Regen · 3° / 8°</div>
+        <div class="cond">Lingen (Ems)</div>
+      </div>
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="24" cy="22" r="11" fill="#f7e463"/><path d="M20 46h28a10 10 0 0 0 0-20 14 14 0 0 0-27 3 9 9 0 0 0-1 17z" fill="#dfe5f7"/><path d="M26 51l-3 7M36 51l-3 7M46 51l-3 7" stroke="#4fc1c6" stroke-width="3" stroke-linecap="round"/></svg>
+    </div>
+  </header>
+
+  <div class="two">
+    <section class="card">
+      <h2>Nächste Stunden <span>Regen mm</span></h2>
+      <div class="hours" id="hours"></div>
+    </section>
+    <section class="card radar">
+      <h2><span class="tag">Regenradar DWD</span><span class="tag num" id="rtime">jetzt</span></h2>
+      <div class="fig"><svg id="map" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"></svg></div>
+      <div class="legend"></div>
+      <div class="slider"><span>−1 h</span><input type="range" id="rng" min="-60" max="120" step="10" value="0" aria-label="Zeit Regenradar"><span>+2 h</span></div>
+    </section>
+  </div>
+
+  <section class="card cam">
+    <svg viewBox="0 0 640 300" preserveAspectRatio="xMidYMid slice" aria-label="Kamerabild Platzhalter">
+      <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3550"/><stop offset="1" stop-color="#3d4a63"/></linearGradient></defs>
+      <rect width="640" height="300" fill="url(#sky)"/>
+      <rect y="200" width="640" height="100" fill="#4a5262"/>
+      <path d="M0 200h640" stroke="#5d6676" stroke-width="3"/>
+      <g fill="#596273"><rect x="40" y="220" width="120" height="18" rx="3"/><rect x="200" y="238" width="140" height="20" rx="3"/><rect x="390" y="258" width="160" height="22" rx="3"/></g>
+      <rect x="440" y="70" width="140" height="130" fill="#56607a"/><rect x="478" y="115" width="54" height="85" fill="#2b3245"/>
+      <path d="M420 75l90-50 90 50z" fill="#3a4258"/>
+      <rect x="70" y="125" width="90" height="65" rx="10" fill="#6b7590"/><circle cx="90" cy="192" r="10" fill="#222"/><circle cx="142" cy="192" r="10" fill="#222"/>
+      <text x="620" y="288" text-anchor="end" fill="#c8d0e4" font-size="15" font-family="Red Hat Text">Kanal 1 · RLC-810A</text>
+    </svg>
+    <div class="live"><b>LIVE</b><span class="tag">Haustür</span></div>
+  </section>
+
+  <div class="two">
+    <section class="card sp">
+      <h2 style="margin:0">Spotify <span>Wohnzimmer</span></h2>
+      <div class="row">
+        <div class="cover" aria-hidden="true"></div>
+        <div>
+          <div class="title">Titel des laufenden Songs</div>
+          <div class="artist">Interpret</div>
+          <div class="bar" style="margin-top:1.2cqw"><i id="prog"></i></div>
+          <div class="times num"><span id="pos">1:24</span><span>3:41</span></div>
+        </div>
+      </div>
+      <div class="ctl">
+        <button aria-label="Zurück"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+        <button class="play" id="play" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor" id="pi"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
+        <button aria-label="Weiter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      </div>
+    </section>
+    <section class="card cal">
+      <h2>Familienkalender <span id="kw">KW 48</span></h2>
+      <div class="day">Heute</div><ul id="today"></ul>
+      <div class="day">Morgen</div><ul id="tomorrow"></ul>
+    </section>
+  </div>
+
+  <section class="card notes">
+    <h2>Einkaufszettel <span>im Familienkalender</span></h2>
+    <form id="add"><input type="text" id="item" placeholder="Mit dem Stift hineinschreiben …" autocomplete="off" aria-label="Neuer Eintrag"><button>Hinzufügen</button></form>
+    <ul class="items" id="items"></ul>
+  </section>
+  <p class="note">Layout-Vorschau mit Beispieldaten – Anbindung folgt</p>
+</main>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tick=()=>{const d=new Date();$('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes());
+  $('date').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});};
+tick();setInterval(tick,10000);
+
+const hrs=[[14,6,0.4],[15,6,0.8],[16,5,1.2],[17,5,0.6],[18,4,0.2],[19,4,0],[20,3,0],[21,3,0.1]];
+$('hours').innerHTML=hrs.map(([h,t,r])=>`<div class="h"><b>${h} Uhr</b><i><span style="width:${Math.min(100,r/1.2*100)}%"></span></i><em>${t}°</em><small>${r?r.toFixed(1).replace('.',','):'–'}</small></div>`).join('');
+
+const ev=a=>a.map(([t,x,done])=>`<li class="${done?'done':''}"><time>${t}</time><span>${x}</span></li>`).join('');
+$('today').innerHTML=ev([['08:00','Zahnarzt',1],['17:30','Fußballtraining'],['19:00','Elternabend']]);
+$('tomorrow').innerHTML=ev([['ganztags','Gelber Sack'],['15:00','Paket abholen']]);
+
+const map=$('map');
+const cells=[[80,220,55,.9],[120,190,35,.6],[50,260,30,.5],[230,270,45,.7],[260,245,25,.95],[40,150,28,.4]];
+const col=v=>v>.85?'#e8452c':v>.7?'#f7e463':v>.5?'#4fc1c6':'#3b4fd8';
+const draw=m=>{const dx=m*.8,dy=-m*.45;
+  map.innerHTML=`<rect width="400" height="300" fill="#16224f"/>
+  <path d="M0 50 C90 30 150 80 200 60 S320 20 400 40" stroke="#2c3a78" stroke-width="2" fill="none"/>
+  <path d="M260 0 C280 70 250 140 290 200 S320 260 310 300" stroke="#2c3a78" stroke-width="2" stroke-dasharray="6 6" fill="none"/>
+  ${cells.map(([x,y,r,v])=>`<circle cx="${x+dx}" cy="${y+dy}" r="${r}" fill="${col(v)}" opacity=".55"/><circle cx="${x+dx}" cy="${y+dy}" r="${r*.5}" fill="${col(Math.min(1,v+.15))}" opacity=".7"/>`).join('')}
+  <circle cx="200" cy="150" r="6" fill="#fff"/><circle cx="200" cy="150" r="14" fill="none" stroke="#fff" stroke-width="2" opacity=".5"/>
+  <text x="212" y="145" fill="#fff" font-size="18" font-weight="700" font-family="Red Hat Display">Lingen</text>`;
+  const d=new Date(Date.now()+m*60000);
+  $('rtime').textContent=(m===0?'jetzt':(m>0?'+':'')+m+' min')+' · '+pad(d.getHours())+':'+pad(d.getMinutes()-d.getMinutes()%5);
+};
+draw(0);$('rng').addEventListener('input',e=>draw(+e.target.value));
+
+let on=true,p=84;
+$('play').addEventListener('click',()=>{on=!on;$('play').setAttribute('aria-label',on?'Pause':'Abspielen');
+  $('pi').innerHTML=on?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M7 4v16l13-8z"/>';});
+setInterval(()=>{if(!on)return;p=(p+1)%221;$('pos').textContent=Math.floor(p/60)+':'+pad(p%60);$('prog').style.width=(p/221*100)+'%';},1000);
+
+const items=[{t:'Milch',d:false},{t:'Brot',d:false},{t:'Äpfel',d:true},{t:'Hundefutter',d:false},{t:'Kaffee',d:false}];
+const render=()=>{$('items').innerHTML=items.map((x,i)=>`<li class="${x.d?'done':''}"><button data-i="${i}">${esc(x.t)}</button></li>`).join('');};
+render();
+$('items').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const x=items[+b.dataset.i];
+  if(x.d)items.splice(+b.dataset.i,1);else x.d=true;render();});
+$('add').addEventListener('submit',e=>{e.preventDefault();const v=$('item').value.trim();if(v){items.unshift({t:v,d:false});$('item').value='';render();}});
+}
+</script>
+</body>
+</html>
