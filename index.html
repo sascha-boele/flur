@@ -59,7 +59,10 @@ input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
 .legend{height:.8cqw;background:linear-gradient(90deg,var(--b),var(--t),var(--y),var(--r))}
 /* 3 Kamera */
 .cam{padding:0;min-height:30cqw}
-.cam svg{position:absolute;inset:0;width:100%;height:100%}
+.cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cammsg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:6cqw;font-size:2.6cqw;color:var(--mute);background:#0e1430}
+.gear{position:absolute;top:1.6cqw;right:1.6cqw;width:6.5cqw;height:6.5cqw;border-radius:50%;border:0;background:rgba(11,20,51,.7);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.gear svg{width:55%;height:55%}
 .live{position:absolute;top:2.2cqw;left:2.6cqw;display:flex;gap:1.4cqw;align-items:center;font:600 2.2cqw "Red Hat Text"}
 .live b{background:var(--r);color:#fff;padding:.5cqw 1.3cqw;border-radius:.8cqw}
 .live b::before{content:"";display:inline-block;width:1.2cqw;height:1.2cqw;border-radius:50%;background:#fff;margin-right:.8cqw;vertical-align:.1cqw;animation:p 1.6s infinite}
@@ -153,18 +156,10 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
   </div>
 
   <section class="card cam">
-    <svg viewBox="0 0 640 300" preserveAspectRatio="xMidYMid slice" aria-label="Kamerabild Platzhalter">
-      <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3550"/><stop offset="1" stop-color="#3d4a63"/></linearGradient></defs>
-      <rect width="640" height="300" fill="url(#sky)"/>
-      <rect y="200" width="640" height="100" fill="#4a5262"/>
-      <path d="M0 200h640" stroke="#5d6676" stroke-width="3"/>
-      <g fill="#596273"><rect x="40" y="220" width="120" height="18" rx="3"/><rect x="200" y="238" width="140" height="20" rx="3"/><rect x="390" y="258" width="160" height="22" rx="3"/></g>
-      <rect x="440" y="70" width="140" height="130" fill="#56607a"/><rect x="478" y="115" width="54" height="85" fill="#2b3245"/>
-      <path d="M420 75l90-50 90 50z" fill="#3a4258"/>
-      <rect x="70" y="125" width="90" height="65" rx="10" fill="#6b7590"/><circle cx="90" cy="192" r="10" fill="#222"/><circle cx="142" cy="192" r="10" fill="#222"/>
-      <text x="620" y="288" text-anchor="end" fill="#c8d0e4" font-size="15" font-family="Red Hat Text">Kanal 1 · RLC-810A</text>
-    </svg>
-    <div class="live"><b>LIVE</b><span class="tag">Haustür</span></div>
+    <img id="camimg" alt="Kamerabild Haustür" hidden>
+    <div class="cammsg" id="cammsg">Kamera wird geladen …</div>
+    <div class="live"><b id="camlive" hidden>LIVE</b><span class="tag">Haustür</span></div>
+    <button class="gear" id="camgear" aria-label="Kamera einstellen"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
   </section>
 
   <div class="two">
@@ -197,7 +192,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
     <form id="add"><textarea id="item" placeholder="Mit dem Stift hineinschreiben – mehrere Artikel mit Komma trennen" aria-label="Einkaufszettel"></textarea><button id="addb" disabled>Hinzu&shy;fügen</button></form>
     <div class="ok" id="ok" aria-live="polite"></div>
   </section>
-  <p class="note">Kamera noch mit Beispielbild – Anbindung folgt</p>
+  
   <div class="modal" id="modal">
     <form class="dlg" id="evf">
       <h3 id="evh">Neuer Termin</h3>
@@ -209,13 +204,24 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
       <div class="ok" id="evmsg" aria-live="polite"></div>
     </form>
   </div>
+  <div class="modal" id="cammodal">
+    <form class="dlg" id="camf">
+      <h3>Kamera einstellen</h3>
+      <label>Adresse des Rekorders<input id="camip" value="192.168.178.163" autocomplete="off"></label>
+      <div class="row2"><label>Kanal<input id="camch" type="number" min="1" max="8" value="1"></label><label>Bilder pro Sekunde<input id="camfps" type="number" min="0.2" max="4" step="0.1" value="1"></label></div>
+      <label>Benutzer<input id="camuser" autocomplete="off"></label>
+      <label>Passwort<input id="campw" type="password" autocomplete="off"></label>
+      <div class="ok" style="color:var(--mute)">Die Zugangsdaten bleiben nur auf diesem Tablet gespeichert.</div>
+      <div class="acts"><button type="button" class="del" id="camdel">Entfernen</button><button type="button" id="camx">Abbrechen</button><button class="save">Speichern</button></div>
+    </form>
+  </div>
 </main>
 
 <script>
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='10';
+const BUILD='11';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -379,6 +385,30 @@ $('add').addEventListener('submit',e=>{e.preventDefault();
   api({action:'shop_add',items:lines.join('\n')}).then(()=>{$('ok').textContent='✓ '+lines.join(', ')+' steht auf dem Einkaufszettel';ta.value='';})
     .catch(()=>{$('ok').textContent='Hat nicht geklappt – bitte nochmal tippen';ab.disabled=false;})
     .finally(()=>{clearTimeout(okT);okT=setTimeout(()=>{$('ok').textContent='';},8000);});});
+
+// Kamera: Reolink-Rekorder im Heimnetz, Einzelbilder per Snap-Befehl (Zugang nur lokal gespeichert)
+let cam=null,camT,camErr=0,camBusy=false;
+try{cam=JSON.parse(ls.get('flurcam')||'null');}catch(e){}
+const camUrl=()=>'http://'+cam.ip+'/cgi-bin/api.cgi?'+new URLSearchParams({cmd:'Snap',channel:String((+cam.ch||1)-1),rs:String(Date.now()),user:cam.user,password:cam.pw,width:'1280',height:'720'});
+const camMsg=t=>{$('cammsg').textContent=t;$('cammsg').hidden=!t;};
+function camTick(){clearTimeout(camT);if(!cam){camMsg('Kamera noch nicht eingerichtet – oben rechts auf das Zahnrad tippen');$('camimg').hidden=true;$('camlive').hidden=true;return;}
+  if(document.hidden){camT=setTimeout(camTick,2000);return;}
+  const im=new Image();const t0=Date.now();
+  im.onload=()=>{$('camimg').src=im.src;$('camimg').hidden=false;$('camlive').hidden=false;camMsg('');camErr=0;
+    camT=setTimeout(camTick,Math.max(150,1000/(+cam.fps||1)-(Date.now()-t0)));};
+  im.onerror=()=>{camErr++;$('camlive').hidden=true;if(camErr>=3){camMsg('Kamera nicht erreichbar. Stimmen Adresse und Zugangsdaten? In Fully muss „Mixed Content“ erlaubt sein.');$('camimg').hidden=true;}
+    camT=setTimeout(camTick,camErr>=3?10000:2000);};
+  im.src=camUrl();}
+const camOpen=()=>{$('camip').value=cam?cam.ip:'192.168.178.163';$('camch').value=cam?cam.ch:1;$('camfps').value=cam?cam.fps:1;
+  $('camuser').value=cam?cam.user:'';$('campw').value=cam?cam.pw:'';$('camdel').style.visibility=cam?'visible':'hidden';$('cammodal').classList.add('on');};
+$('camgear').addEventListener('click',camOpen);
+$('camx').addEventListener('click',()=>$('cammodal').classList.remove('on'));
+$('cammodal').addEventListener('click',e=>{if(e.target===$('cammodal'))$('cammodal').classList.remove('on');});
+$('camdel').addEventListener('click',()=>{cam=null;ls.set('flurcam',null);$('cammodal').classList.remove('on');camTick();});
+$('camf').addEventListener('submit',e=>{e.preventDefault();cam={ip:$('camip').value.trim(),ch:+$('camch').value||1,fps:+$('camfps').value||1,user:$('camuser').value.trim(),pw:$('campw').value};
+  ls.set('flurcam',JSON.stringify(cam));camErr=0;$('cammodal').classList.remove('on');camMsg('Verbinde …');camTick();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)camTick();});
+camTick();
 }
 </script>
 </body>
