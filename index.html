@@ -221,7 +221,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='14';
+const BUILD='15';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -394,14 +394,24 @@ let camProto='http';
 const camHost=()=>String(cam.ip||'').trim().replace(/^[a-z]+:\/\//i,'').replace(/\/.*$/,'');
 const camUrl=()=>camProto+'://'+camHost()+'/cgi-bin/api.cgi?'+new URLSearchParams({cmd:'Snap',channel:String((+cam.ch||1)-1),rs:String(Date.now()),user:cam.user,password:cam.pw,width:'1280',height:'720'});
 const camMsg=t=>{$('cammsg').textContent=t;$('cammsg').hidden=!t;};
+function camProbe(){ // Diagnose: ist der Rekorder überhaupt erreichbar? (Logo der Weboberfläche)
+  const res={};let n=0;['http','https'].forEach(p=>{const i=new Image();const to=setTimeout(()=>{i.src='';fin(p,'keine Antwort');},8000);
+    i.onload=()=>{clearTimeout(to);fin(p,'erreichbar');};i.onerror=()=>{clearTimeout(to);fin(p,'Fehler');};i.src=p+'://'+camHost()+'/img/logo.png?x='+Date.now();});
+  function fin(p,r){if(res[p])return;res[p]=r;if(++n<2)return;
+    const ok=res.http==='erreichbar'||res.https==='erreichbar';
+    camMsg(ok?'Rekorder ist erreichbar, aber das Kamerabild wird abgelehnt – Benutzer/Passwort oder Kanal prüfen.'
+      :'Rekorder nicht erreichbar (http: '+res.http+', https: '+res.https+'). Adresse prüfen.');}}
 function camTick(){clearTimeout(camT);if(!cam){camMsg('Kamera noch nicht eingerichtet – oben rechts auf das Zahnrad tippen');$('camimg').hidden=true;$('camlive').hidden=true;return;}
   if(document.hidden){camT=setTimeout(camTick,2000);return;}
-  const im=new Image();const t0=Date.now();
-  im.onload=()=>{$('camimg').src=im.src;$('camimg').hidden=false;$('camlive').hidden=false;camMsg('');camErr=0;
+  const im=new Image();const t0=Date.now();let done=false;
+  const fail=()=>{if(done)return;done=true;clearTimeout(wd);camErr++;$('camlive').hidden=true;if(camErr%2===0)camProto=camProto==='http'?'https':'http';
+    if(camErr===4){$('camimg').hidden=true;camMsg('Prüfe Verbindung zum Rekorder …');camProbe();}
+    else if(camErr<4&&$('camimg').hidden)camMsg('Verbinde ('+camProto+', Versuch '+camErr+') …');
+    camT=setTimeout(camTick,camErr>=4?15000:1000);};
+  const wd=setTimeout(()=>{im.src='';fail();},10000);
+  im.onload=()=>{if(done)return;done=true;clearTimeout(wd);$('camimg').src=im.src;$('camimg').hidden=false;$('camlive').hidden=false;camMsg('');camErr=0;
     camT=setTimeout(camTick,Math.max(150,1000/(+cam.fps||1)-(Date.now()-t0)));};
-  im.onerror=()=>{camErr++;$('camlive').hidden=true;if(camErr%2===0)camProto=camProto==='http'?'https':'http';
-    if(camErr>=4){camMsg('Kamera nicht erreichbar (http und https probiert). Stimmen Adresse und Zugangsdaten? In Fully unter Advanced Web Settings „Mixed Content“ erlauben und „Ignore SSL Errors“ einschalten.');$('camimg').hidden=true;}
-    camT=setTimeout(camTick,camErr>=4?10000:1500);};
+  im.onerror=fail;
   im.src=camUrl();}
 const camOpen=()=>{$('camip').value=cam?cam.ip:'192.168.178.163';$('camch').value=cam?cam.ch:1;$('camfps').value=cam?cam.fps:1;
   $('camuser').value=cam?cam.user:'';$('campw').value=cam?cam.pw:'';$('camdel').style.visibility=cam?'visible':'hidden';$('cammodal').classList.add('on');};
