@@ -449,7 +449,7 @@ html,body{background:#e3d8c6}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='54';
+const BUILD='55';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -529,7 +529,7 @@ const renderCal=()=>{const now=new Date(),t=iso(now),hm=pad(now.getHours())+':'+
     return `<div class="day">${dayName(d)}</div>`+(its.length||sl?`<ul>${sl}${its.map(e=>{const done=d===t&&e.end&&e.endDate===t&&e.end<=hm;
       return `<li class="${done?'done':''}"><button data-id="${esc(e.id)}"><time>${e.start||'ganztags'}</time><span>${esc(e.title)}</span></button></li>`;}).join('')}</ul>`:'<div class="empty">Keine Termine</div>');}).join('');};
 let shopList=[];
-async function loadCal(){try{const j=await api({action:'list',days:21});evs=j.events;shopList=j.shop||[];calErr='';}
+async function loadCal(){try{const j=await api({action:'list',days:21});evs=j.events;shopList=j.shop||[];if(j.wifi&&j.wifi.s)window.WIFIREMOTE=j.wifi;calErr='';}
   catch(e){calErr=CFG?'Kalender gerade nicht erreichbar':'Kalender nicht verbunden';}renderCal();}
 renderCal();loadCal();setInterval(loadCal,5*60000);setInterval(renderCal,60000);
 const kw=d=>{d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-n);
@@ -783,7 +783,7 @@ pThumb();
   const get=()=>{try{return JSON.parse(ls.get('flurwifi')||'null')}catch(e){return null}};
   const esc=v=>String(v).replace(/([\\;,:"])/g,'\\$1');
   const close=()=>{M.classList.remove('on');clearTimeout(wt);};
-  const view=()=>{const w=get();if(!w||!w.s)return edit();$('wifif').hidden=true;$('wifiview').hidden=false;
+  const view=()=>{const w=get()||window.WIFIREMOTE;if(!w||!w.s)return edit();$('wifif').hidden=true;$('wifiview').hidden=false;
     $('wifissid').textContent=w.s;$('wifipw').textContent=w.e==='nopass'?'– kein Passwort –':w.p;
     const str='WIFI:T:'+(w.e==='nopass'?'nopass':'WPA')+';S:'+esc(w.s)+';'+(w.e==='nopass'?'':'P:'+esc(w.p)+';')+';';
     try{qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];const q=qrcode(0,'M');q.addData(str);q.make();$('wifiqr').innerHTML=q.createSvgTag({cellSize:4,margin:0,scalable:true});}
