@@ -211,8 +211,8 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
       <h3>Kamera einstellen</h3>
       <label>Adresse des Rekorders<input id="camip" value="192.168.178.163" autocomplete="off"></label>
       <div class="row2"><label>Kanal<input id="camch" type="number" min="1" max="8" value="1"></label><label>Bilder pro Sekunde<input id="camfps" type="number" min="0.2" max="4" step="0.1" value="1"></label></div>
-      <label>Benutzer<input id="camuser" autocomplete="off"></label>
-      <label>Passwort<input id="campw" type="password" autocomplete="off"></label>
+      <label>Benutzer<input id="camuser" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+      <label>Passwort<span style="display:flex;gap:1.6cqw"><input id="campw" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button type="button" id="campwshow" style="font:600 2.4cqw 'Red Hat Text';border:0;border-radius:1.4cqw;padding:0 2.4cqw;background:var(--line);color:var(--ink);white-space:nowrap">Zeigen</button></span></label>
       <div class="ok" style="color:var(--mute)">Die Zugangsdaten bleiben nur auf diesem Tablet gespeichert.</div>
       <div class="acts"><button type="button" class="del" id="camdel">Entfernen</button><button type="button" id="camx">Abbrechen</button><button class="save">Speichern</button></div>
     </form>
@@ -223,7 +223,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='18';
+const BUILD='19';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -389,7 +389,7 @@ $('add').addEventListener('submit',e=>{e.preventDefault();
     .finally(()=>{clearTimeout(okT);okT=setTimeout(()=>{$('ok').textContent='';},8000);});});
 
 // Kamera: Reolink-Rekorder im Heimnetz, Einzelbilder per Snap-Befehl (Zugang nur lokal gespeichert)
-let cam=null,camT,camErr=0,camBusy=false,camProto='http';
+let cam=null,camT,camErr=0,camBusy=false,camProto='http',camStop=false;
 try{cam=JSON.parse(ls.get('flurcam')||'null');}catch(e){}
 if(cam&&/^https:/i.test(cam.ip||''))camProto='https';
 const camHost=()=>String(cam.ip||'').trim().replace(/^[a-z]+:\/\//i,'').replace(/\/.*$/,'');
@@ -400,10 +400,11 @@ function camProbe(){ // Diagnose: ist der Rekorder überhaupt erreichbar? (Logo 
     i.onload=()=>{clearTimeout(to);fin(p,'erreichbar');};i.onerror=()=>{clearTimeout(to);fin(p,'Fehler');};i.src=p+'://'+camHost()+'/img/logo.png?x='+Date.now();});
   function fin(p,r){if(res[p])return;res[p]=r;if(++n<2)return;
     const ok=res.http==='erreichbar'||res.https==='erreichbar';
-    camMsg(ok?'Rekorder ist erreichbar, aber das Kamerabild wird abgelehnt – Benutzer/Passwort oder Kanal prüfen.'
+    if(ok){clearTimeout(camT);camStop=true;}
+    camMsg(ok?'Rekorder ist erreichbar, aber das Kamerabild wird abgelehnt – Benutzer/Passwort oder Kanal prüfen. (Weitere Versuche angehalten, damit der Rekorder den Zugang nicht sperrt.)'
       :'Rekorder nicht erreichbar (http: '+res.http+', https: '+res.https+'). Adresse prüfen.');}}
 const camDbg=t=>{$('camdbg').textContent='v'+BUILD+' · '+t+' · Fehler '+camErr;};
-function camTick(){clearTimeout(camT);if(!cam){camMsg('Kamera noch nicht eingerichtet – oben rechts auf das Zahnrad tippen');$('camimg').hidden=true;$('camlive').hidden=true;return;}
+function camTick(){clearTimeout(camT);if(camStop)return;if(!cam){camMsg('Kamera noch nicht eingerichtet – oben rechts auf das Zahnrad tippen');$('camimg').hidden=true;$('camlive').hidden=true;return;}
   camDbg('Anfrage '+camProto+' läuft …');
   const im=new Image();const t0=Date.now();let done=false;
   const fail=()=>{if(done)return;done=true;clearTimeout(wd);camErr++;$('camlive').hidden=true;if(camErr%2===0)camProto=camProto==='http'?'https':'http';
@@ -418,11 +419,12 @@ function camTick(){clearTimeout(camT);if(!cam){camMsg('Kamera noch nicht eingeri
 const camOpen=()=>{$('camip').value=cam?cam.ip:'192.168.178.163';$('camch').value=cam?cam.ch:1;$('camfps').value=cam?cam.fps:1;
   $('camuser').value=cam?cam.user:'';$('campw').value=cam?cam.pw:'';$('camdel').style.visibility=cam?'visible':'hidden';$('cammodal').classList.add('on');};
 $('camgear').addEventListener('click',camOpen);
+$('campwshow').addEventListener('click',()=>{const p=$('campw');p.type=p.type==='password'?'text':'password';$('campwshow').textContent=p.type==='password'?'Zeigen':'Verbergen';});
 $('camx').addEventListener('click',()=>$('cammodal').classList.remove('on'));
 $('cammodal').addEventListener('click',e=>{if(e.target===$('cammodal'))$('cammodal').classList.remove('on');});
 $('camdel').addEventListener('click',()=>{cam=null;ls.set('flurcam',null);$('cammodal').classList.remove('on');camTick();});
 $('camf').addEventListener('submit',e=>{e.preventDefault();cam={ip:$('camip').value.trim(),ch:+$('camch').value||1,fps:+$('camfps').value||1,user:$('camuser').value.trim(),pw:$('campw').value};
-  camProto=/^https:/i.test(cam.ip)?'https':'http';ls.set('flurcam',JSON.stringify(cam));camErr=0;$('cammodal').classList.remove('on');camMsg('Verbinde …');camTick();});
+  camStop=false;camProto=/^https:/i.test(cam.ip)?'https':'http';ls.set('flurcam',JSON.stringify(cam));camErr=0;$('cammodal').classList.remove('on');camMsg('Verbinde …');camTick();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)camTick();});
 camTick();
 }
