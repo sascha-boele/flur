@@ -194,7 +194,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 
   <section class="card notes">
     <h2>Einkaufszettel <span>im Familienkalender</span></h2>
-    <form id="add"><textarea id="item" placeholder="Mit dem Stift hineinschreiben – eine Zeile pro Artikel" aria-label="Einkaufszettel"></textarea><button id="addb" disabled>Hinzu&shy;fügen</button></form>
+    <form id="add"><textarea id="item" placeholder="Mit dem Stift hineinschreiben – mehrere Artikel mit Komma trennen" aria-label="Einkaufszettel"></textarea><button id="addb" disabled>Hinzu&shy;fügen</button></form>
     <div class="ok" id="ok" aria-live="polite"></div>
   </section>
   <p class="note">Kamera noch mit Beispielbild – Anbindung folgt</p>
@@ -215,7 +215,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='9';
+const BUILD='10';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -374,7 +374,7 @@ setInterval(()=>{if(sp.on)spShow();},1000);
 const ta=$('item'),ab=$('addb');let okT;
 ta.addEventListener('input',()=>{ab.disabled=!ta.value.trim();});
 $('add').addEventListener('submit',e=>{e.preventDefault();
-  const lines=ta.value.split('\n').map(s=>s.trim()).filter(Boolean);if(!lines.length)return;
+  const lines=ta.value.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean);if(!lines.length)return;
   ab.disabled=true;$('ok').textContent='Wird eingetragen …';
   api({action:'shop_add',items:lines.join('\n')}).then(()=>{$('ok').textContent='✓ '+lines.join(', ')+' steht auf dem Einkaufszettel';ta.value='';})
     .catch(()=>{$('ok').textContent='Hat nicht geklappt – bitte nochmal tippen';ab.disabled=false;})
