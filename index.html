@@ -77,15 +77,12 @@ input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
 .cal .day{font:600 2cqw "Red Hat Text";color:var(--mute);margin:1.2cqw 0 .5cqw}
 .cal .day:first-of-type{margin-top:0}
 /* 6 Notizen */
-.notes form{display:grid;grid-template-columns:1fr auto;gap:1.6cqw;margin-bottom:1.6cqw}
-.notes input[type=text]{font:500 2.8cqw "Red Hat Text";color:var(--ink);background:#0b1433;border:.25cqw dashed var(--line);border-radius:1.4cqw;padding:1.6cqw 2cqw;width:100%}
-.notes input::placeholder{color:var(--mute)}
-.notes form button{font:700 2.4cqw "Red Hat Display";border:0;border-radius:1.4cqw;padding:0 3cqw;background:var(--t);color:#062226;cursor:pointer}
-.items{display:flex;flex-wrap:wrap;gap:1.2cqw;list-style:none;margin:0;padding:0}
-.items li button{font:500 2.5cqw "Red Hat Text";color:var(--ink);background:var(--line);border:0;border-radius:5cqw;padding:1.1cqw 2.2cqw;cursor:pointer;display:flex;gap:1cqw;align-items:center}
-.items li button::before{content:"";width:2cqw;height:2cqw;border-radius:50%;border:.3cqw solid var(--t)}
-.items li.done button{color:var(--mute);text-decoration:line-through}
-.items li.done button::before{background:var(--t)}
+.notes form{display:grid;grid-template-columns:1fr 18cqw;gap:1.6cqw}
+.notes textarea{font:500 3.4cqw/1.35 "Red Hat Text";color:var(--ink);background:#0b1433;border:.25cqw dashed var(--line);border-radius:1.6cqw;padding:2cqw 2.4cqw;width:100%;height:21cqw;resize:none}
+.notes textarea::placeholder{color:var(--mute)}
+.notes form button{font:700 2.8cqw "Red Hat Display";border:0;border-radius:1.6cqw;background:var(--t);color:#062226;cursor:pointer;transition:opacity .2s}
+.notes form button:disabled{background:var(--line);color:var(--mute);cursor:default}
+.ok{font-size:2.2cqw;color:var(--t);margin-top:1.2cqw;min-height:2.8cqw}
 button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-offset:.4cqw}
 .note{font-size:1.8cqw;color:var(--mute);text-align:center;margin:-.6cqw 0 0}
 </style>
@@ -162,8 +159,8 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 
   <section class="card notes">
     <h2>Einkaufszettel <span>im Familienkalender</span></h2>
-    <form id="add"><input type="text" id="item" placeholder="Mit dem Stift hineinschreiben …" autocomplete="off" aria-label="Neuer Eintrag"><button>Hinzufügen</button></form>
-    <ul class="items" id="items"></ul>
+    <form id="add"><textarea id="item" placeholder="Mit dem Stift hineinschreiben – eine Zeile pro Artikel" aria-label="Einkaufszettel"></textarea><button id="addb" disabled>Hinzu&shy;fügen</button></form>
+    <div class="ok" id="ok" aria-live="polite"></div>
   </section>
   <p class="note">Layout-Vorschau mit Beispieldaten – Anbindung folgt</p>
 </main>
@@ -204,12 +201,13 @@ $('play').addEventListener('click',()=>{on=!on;$('play').setAttribute('aria-labe
   $('pi').innerHTML=on?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M7 4v16l13-8z"/>';});
 setInterval(()=>{if(!on)return;p=(p+1)%221;$('pos').textContent=Math.floor(p/60)+':'+pad(p%60);$('prog').style.width=(p/221*100)+'%';},1000);
 
-const items=[{t:'Milch',d:false},{t:'Brot',d:false},{t:'Äpfel',d:true},{t:'Hundefutter',d:false},{t:'Kaffee',d:false}];
-const render=()=>{$('items').innerHTML=items.map((x,i)=>`<li class="${x.d?'done':''}"><button data-i="${i}">${esc(x.t)}</button></li>`).join('');};
-render();
-$('items').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const x=items[+b.dataset.i];
-  if(x.d)items.splice(+b.dataset.i,1);else x.d=true;render();});
-$('add').addEventListener('submit',e=>{e.preventDefault();const v=$('item').value.trim();if(v){items.unshift({t:v,d:false});$('item').value='';render();}});
+const ta=$('item'),ab=$('addb');let okT;
+ta.addEventListener('input',()=>{ab.disabled=!ta.value.trim();});
+$('add').addEventListener('submit',e=>{e.preventDefault();
+  const lines=ta.value.split('\n').map(s=>s.trim()).filter(Boolean);if(!lines.length)return;
+  // TODO Anbindung: Zeilen an den Termin "Einkaufszettel" im Familienkalender anhängen
+  $('ok').textContent='✓ '+lines.join(', ')+' zum Einkaufszettel hinzugefügt';
+  ta.value='';ab.disabled=true;clearTimeout(okT);okT=setTimeout(()=>{$('ok').textContent='';},6000);});
 }
 </script>
 </body>
