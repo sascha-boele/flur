@@ -299,7 +299,7 @@ html,body{background:#e3d8c6}
 .wifitxt{display:flex;flex-direction:column;gap:calc(.6*var(--u));min-width:0}
 .wifitxt small{font:500 calc(2.4*var(--u)) "Red Hat Text";color:var(--mute);margin-bottom:calc(2*var(--u))}
 .wifitxt span{font:600 calc(2*var(--u)) "Red Hat Text";color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
-.wifitxt b{font:700 calc(3.6*var(--u)) "Red Hat Display";color:var(--ink);word-break:break-all;margin-bottom:calc(1.6*var(--u))}
+.wifitxt b{font:700 calc(3.6*var(--u)) "Red Hat Display";color:var(--ink);word-break:normal;overflow-wrap:break-word;margin-bottom:calc(1.6*var(--u))}
 .dlg select{font:500 calc(3*var(--u)) "Red Hat Text";color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:calc(1.4*var(--u));padding:calc(1.6*var(--u)) calc(2*var(--u));width:100%}
 </style>
 </head>
@@ -449,7 +449,7 @@ html,body{background:#e3d8c6}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='55';
+const BUILD='56';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
