@@ -154,7 +154,8 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .cal li.shopli time{color:var(--y)}
 
 /* Kopf neu: Uhr | Symbol + Temperatur gleich groß, darunter Datum (auf Uhrbreite) | Wetterlage + Ort gleich groß */
-.top{grid-template-columns:auto auto;justify-content:space-between;align-items:start}
+.top{grid-template-columns:auto auto;justify-content:start;align-items:stretch;column-gap:calc(3*var(--u))}
+.tr{border-left:2px solid var(--line);padding-left:calc(3*var(--u))}
 .tl,.tr{min-width:0}
 .trow{display:flex;align-items:center;gap:calc(1.5*var(--u))}
 .top .temp{font:800 calc(13*var(--u))/.9 "Red Hat Display",sans-serif;letter-spacing:-.03em}
@@ -163,7 +164,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .clock{display:inline-block}
 .tl{display:flex;flex-direction:column;align-items:flex-start}
 .top .cond{color:var(--mute);margin-top:calc(.6*var(--u));white-space:nowrap;font-family:"Red Hat Display"}
-.top .cond#wc{margin-top:calc(1*var(--u))}
+.top .cond{margin-top:calc(1*var(--u))}
 /* animierte Wettersymbole */
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes drift{0%,100%{transform:translateX(-2px)}50%{transform:translateX(3px)}}
@@ -218,6 +219,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .spcon{grid-column:1/-1}
   .shopdlg{width:calc(130*var(--u))}
   .paintdlg{width:calc(150*var(--u))}
+  .radar{min-height:0}.radar .fig{min-height:0}
 }
 
 </style>
@@ -231,8 +233,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
     </div>
     <div class="tr">
       <div class="trow"><span id="wi" class="wicon"></span><div class="temp num" id="wt">–°</div></div>
-      <div class="cond" id="wc">Wetter wird geladen …</div>
-      <div class="cond" id="wloc">Lingen (Ems)</div>
+      <div class="cond"><span id="wc">Wetter wird geladen …</span> · <span id="wloc">Lingen (Ems)</span></div>
     </div>
   </header>
 
@@ -349,7 +350,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='30';
+const BUILD='32';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -357,7 +358,7 @@ const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&q
 const tick=()=>{const d=new Date();$('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes());
   $('date').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});if(typeof fitHead==='function')fitHead();};
 function fitHead(){const c=$('clock'),d=$('date');d.style.fontSize='';const cw=c.getBoundingClientRect().width,dw=d.getBoundingClientRect().width;
-  if(cw&&dw){const fs=parseFloat(getComputedStyle(d).fontSize)*cw/dw;d.style.fontSize=fs+'px';$('wc').style.fontSize=fs+'px';$('wloc').style.fontSize=fs+'px';}}
+  if(cw&&dw){const fs=parseFloat(getComputedStyle(d).fontSize)*cw/dw;d.style.fontSize=fs+'px';d.parentNode&&($('wc').parentNode.style.fontSize=fs+'px');}}
 tick();setInterval(tick,10000);addEventListener('resize',()=>setTimeout(fitHead,100));(document.fonts?document.fonts.ready:Promise.resolve()).then(fitHead);
 
 // Wetter: Open-Meteo (DWD-Modelle), Lingen
