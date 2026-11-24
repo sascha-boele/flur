@@ -163,7 +163,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .date{white-space:nowrap;margin-top:calc(1*var(--u));display:inline-block}
 .clock{display:inline-block}
 .tl{display:flex;flex-direction:column;align-items:flex-start}
-.top .cond{color:var(--mute);margin-top:calc(.6*var(--u));white-space:nowrap;font-family:"Red Hat Display"}
+.top .cond{color:var(--mute);margin-top:calc(.6*var(--u));white-space:nowrap;font-family:"Red Hat Display";display:inline-block}
 .top .cond{margin-top:calc(1*var(--u))}
 /* animierte Wettersymbole */
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -233,7 +233,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
     </div>
     <div class="tr">
       <div class="trow"><span id="wi" class="wicon"></span><div class="temp num" id="wt">–°</div></div>
-      <div class="cond"><span id="wc">Wetter wird geladen …</span> · <span id="wloc">Lingen (Ems)</span></div>
+      <div class="cond"><span id="wc">Wetter wird geladen …</span> · <span id="wloc">Lingen</span></div>
     </div>
   </header>
 
@@ -350,7 +350,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='32';
+const BUILD='33';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -358,7 +358,10 @@ const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&q
 const tick=()=>{const d=new Date();$('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes());
   $('date').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});if(typeof fitHead==='function')fitHead();};
 function fitHead(){const c=$('clock'),d=$('date');d.style.fontSize='';const cw=c.getBoundingClientRect().width,dw=d.getBoundingClientRect().width;
-  if(cw&&dw){const fs=parseFloat(getComputedStyle(d).fontSize)*cw/dw;d.style.fontSize=fs+'px';d.parentNode&&($('wc').parentNode.style.fontSize=fs+'px');}}
+  if(cw&&dw){const fs=parseFloat(getComputedStyle(d).fontSize)*cw/dw;d.style.fontSize=fs+'px';const cd=$('wc').parentNode;cd.style.fontSize=fs+'px';
+    const top=document.querySelector('.top'),tr=document.querySelector('.tr'),cs=getComputedStyle(tr);
+    const avail=top.clientWidth-document.querySelector('.tl').getBoundingClientRect().width-parseFloat(getComputedStyle(top).columnGap||0)-parseFloat(cs.paddingLeft)-parseFloat(cs.borderLeftWidth)-4;
+    const cw2=cd.scrollWidth;if(cw2>avail&&avail>0)cd.style.fontSize=(fs*avail/cw2)+'px';}}
 tick();setInterval(tick,10000);addEventListener('resize',()=>setTimeout(fitHead,100));(document.fonts?document.fonts.ready:Promise.resolve()).then(fitHead);
 
 // Wetter: Open-Meteo (DWD-Modelle), Lingen
