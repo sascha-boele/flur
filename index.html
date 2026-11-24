@@ -289,9 +289,9 @@ html,body{background:#e3d8c6}
 .cammsg{background:rgba(255,255,255,.35)}
 
 /* Gäste-WLAN */
-.wifib{position:absolute;top:calc(1.6*var(--u));right:calc(9.6*var(--u));height:calc(6.5*var(--u));display:flex;align-items:center;gap:calc(1*var(--u));padding:0 calc(2.2*var(--u));border-radius:calc(3.25*var(--u));border:1px solid rgba(255,255,255,.8);background:rgba(251,249,245,.9);color:var(--t);font:700 calc(2.3*var(--u)) "Red Hat Display";cursor:pointer;z-index:2}
-.wifib svg{width:calc(3.4*var(--u));height:calc(3.4*var(--u))}
-.wifib:active{background:#fff}
+.wifib{position:absolute;top:0;left:0;z-index:20;padding:calc(.9*var(--u)) calc(1.2*var(--u));border:0;background:none;color:var(--t);opacity:.75;cursor:pointer;line-height:0}
+.wifib svg{width:calc(2.8*var(--u));height:calc(2.8*var(--u))}
+.wifib:active{opacity:1}
 .wifidlg{width:calc(100*var(--u))}
 .wifibox{display:flex;gap:calc(4*var(--u));align-items:center;margin-top:calc(2*var(--u))}
 #wifiqr{flex:none;width:calc(44*var(--u));height:calc(44*var(--u));background:#fff;border-radius:calc(2*var(--u));padding:calc(2*var(--u));box-sizing:border-box}
@@ -306,6 +306,7 @@ html,body{background:#e3d8c6}
 <body>
 <main class="screen">
   <div class="snow" id="snow" aria-hidden="true"></div>
+  <button class="wifib" id="wifib" aria-label="Gäste-WLAN anzeigen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.6a10 10 0 0 1 14 0"/><path d="M8.5 16.2a5 5 0 0 1 7 0"/><circle cx="12" cy="19.6" r="1.1" fill="currentColor"/></svg></button>
   <header class="top">
     <div class="tl">
       <div class="clock num" id="clock">13:59</div>
@@ -333,7 +334,6 @@ html,body{background:#e3d8c6}
     <div class="cammsg" id="cammsg">Kamera wird geladen …</div>
     <div class="camdbg" id="camdbg">Skript startet …</div>
     <div class="live"><b id="camlive" hidden>LIVE</b><span class="tag">Haustür</span></div>
-    <button class="wifib" id="wifib" aria-label="Gäste-WLAN anzeigen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.6a10 10 0 0 1 14 0"/><path d="M8.5 16.2a5 5 0 0 1 7 0"/><circle cx="12" cy="19.6" r="1.1" fill="currentColor"/></svg>Gäste-WLAN</button>
     <button class="gear" id="camgear" aria-label="Kamera einstellen"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
   </section>
 
@@ -449,7 +449,7 @@ html,body{background:#e3d8c6}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='53';
+const BUILD='54';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
