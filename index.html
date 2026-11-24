@@ -231,7 +231,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 /* Querformat: drei Spalten, gleiche Elementgröße wie hochkant */
 @media all{ /* nur noch Querformat */
   :root{--u:calc(min(100vw/1.6667,100vh)/100)}
-  .screen{width:min(100vw,calc(100vh*1.6667));aspect-ratio:1.6667;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
+  .screen{width:min(100vw,calc(100vh*1.6667));aspect-ratio:1.6667;grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,.8fr);
     grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top cam cal" "radar cam cal" "paint sp notes"}
   .two{display:contents}
   .top{grid-area:top}.hrs{grid-area:hrs}.radar{grid-area:radar}.cam{grid-area:cam}.sp{grid-area:sp}.cal{grid-area:cal;min-height:0}.notes{grid-area:notes}.paint{grid-area:paint}
@@ -253,6 +253,12 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .spcon{grid-column:1/-1}
   .shopdlg{width:calc(130*var(--u))}
   .paintdlg{width:calc(150*var(--u))}
+  .cal li button{font-size:calc(2.8*var(--u));font-weight:600;grid-template-columns:calc(10*var(--u)) 1fr;padding:calc(.9*var(--u)) calc(.6*var(--u))}
+  .cal li time{font-size:calc(2.6*var(--u))}
+  .cal .day{font-size:calc(2.2*var(--u))}
+  .cal ul{gap:calc(.5*var(--u))}
+  .advent{font-size:calc(1.7*var(--u))}
+  .notes h2 span{display:none}
   .radar{min-height:0}.radar .fig{min-height:0}
 }
 
@@ -385,7 +391,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='42';
+const BUILD='43';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
