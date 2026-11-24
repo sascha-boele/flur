@@ -311,12 +311,39 @@ html,body{background:#e3d8c6}
 .top .vsep{grid-column:2;grid-row:1/3;align-self:stretch}
 .top .date{grid-column:1;grid-row:2;align-self:baseline;margin:0!important;line-height:1.2}
 .top .cond{grid-column:3;grid-row:2;align-self:baseline;margin:0!important;line-height:1.2}
+
+/* Dunkelmodus (automatisch 22–6 Uhr, Schalter oben rechts) */
+.darkb{position:absolute;top:0;right:0;z-index:20;padding:calc(.9*var(--u)) calc(1.2*var(--u));border:0;background:none;color:var(--t);opacity:.75;cursor:pointer;line-height:0}
+.darkb svg{width:calc(2.8*var(--u));height:calc(2.8*var(--u))}
+.darkb .sun{display:none}
+html.dark .darkb .sun{display:block}html.dark .darkb .moon{display:none}
+html.dark{--bg:#1d1b18;--card:#2a2724;--line:#3c3832;--ink:#f1eadf;--mute:#a69c8c;--field:#34302b;--sand:#5e5444;--t:#6fae98;--y:#d6a74a;--r:#e0675c}
+html.dark,html.dark body{background:#171513}
+html.dark .screen{background:
+  radial-gradient(38% 55% at 6% 0%,rgba(214,167,74,.16),rgba(214,167,74,0) 72%),
+  radial-gradient(34% 50% at 100% 0%,rgba(47,93,80,.45),rgba(47,93,80,0) 72%),
+  radial-gradient(30% 40% at 30% 55%,rgba(184,137,45,.14),rgba(184,137,45,0) 72%),
+  radial-gradient(40% 50% at 98% 100%,rgba(47,93,80,.35),rgba(47,93,80,0) 72%),
+  radial-gradient(55% 45% at 30% 100%,rgba(94,84,68,.55),rgba(94,84,68,0) 72%),
+  linear-gradient(165deg,#2a2622 0%,#1f1c19 55%,#171513 100%)}
+html.dark .card{background:rgba(42,39,36,.55);border-color:rgba(255,255,255,.09);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 calc(1.2*var(--u)) calc(4*var(--u)) rgba(0,0,0,.35)}
+html.dark .cal .day{background:rgba(36,33,30,.85)}
+html.dark .shopbtn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
+html.dark .shopbtn:active{background:rgba(255,255,255,.12)}
+html.dark .hc i{background:rgba(255,255,255,.08)}
+html.dark .cammsg{background:rgba(0,0,0,.25)}
+html.dark .tag,html.dark .gear{background:rgba(30,28,25,.85);color:var(--ink)}
+html.dark .modal{background:rgba(0,0,0,.55)}
+html.dark .vsep{background:var(--sand);opacity:1}
+html.dark .wifib,html.dark .darkb{color:var(--y)}
+html.dark .wifidlg #wifiqr{background:#fff}
 </style>
 </head>
 <body>
 <main class="screen">
   <div class="snow" id="snow" aria-hidden="true"></div>
   <button class="wifib" id="wifib" aria-label="Gäste-WLAN anzeigen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.6a10 10 0 0 1 14 0"/><path d="M8.5 16.2a5 5 0 0 1 7 0"/><circle cx="12" cy="19.6" r="1.1" fill="currentColor"/></svg></button>
+  <button class="darkb" id="darkb" aria-label="Dunkelmodus umschalten"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.8 6.8 0 0 0 10.7 10.7z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
   <header class="top">
     <div class="tl">
       <div class="clock num" id="clock">13:59</div>
@@ -459,7 +486,7 @@ html,body{background:#e3d8c6}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='58';
+const BUILD='59';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -807,6 +834,17 @@ pThumb();
   $('wifif').addEventListener('submit',e=>{e.preventDefault();const s=$('wifiin').value.trim();if(!s)return;ls.set('flurwifi',JSON.stringify({s,p:$('wifipin').value,e:$('wifienc').value}));view();});
   M.addEventListener('click',e=>{if(e.target===M)close();});
 })();
+
+// Dunkelmodus: automatisch 22–6 Uhr; Schalter oben rechts überstimmt bis zum nächsten automatischen Wechsel
+(()=>{const night=d=>{const h=d.getHours();return h>=22||h<6;};
+  const nextSwitch=d=>{const n=new Date(d);n.setSeconds(0,0);n.setMinutes(0);const h=n.getHours();
+    if(h>=22){n.setDate(n.getDate()+1);n.setHours(6);}else if(h<6)n.setHours(6);else n.setHours(22);return n.getTime();};
+  const apply=()=>{const now=new Date();let o=null;try{o=JSON.parse(ls.get('flurdark')||'null')}catch(e){}
+    if(o&&o.until<=now.getTime()){o=null;ls.set('flurdark',null);}
+    const dark=o?o.dark:night(now);document.documentElement.classList.toggle('dark',dark);};
+  $('darkb').addEventListener('click',()=>{const now=new Date();const dark=!document.documentElement.classList.contains('dark');
+    if(dark===night(now))ls.set('flurdark',null);else ls.set('flurdark',JSON.stringify({dark,until:nextSwitch(now)}));apply();});
+  apply();setInterval(apply,30000);})();
 // Winter & Advent: Schneefall (20.11.–6.1.) und Countdown bis Heiligabend
 (()=>{const now=new Date(),y=now.getFullYear(),m=now.getMonth(),d=now.getDate();
   const season=(m===10&&d>=20)||m===11||(m===0&&d<=6);
