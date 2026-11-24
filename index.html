@@ -396,7 +396,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='48';
+const BUILD='49';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -411,7 +411,8 @@ function fitHead(){const c=$('clock'),d=$('date'),T=$('wt'),top0=document.queryS
   if(cw&&dw){const fs=parseFloat(getComputedStyle(d).fontSize)*cw/dw;d.style.fontSize=fs+'px';const cd=$('wc').parentNode;cd.style.fontSize=fs+'px';
     const top=document.querySelector('.top'),tr=document.querySelector('.tr'),cs=getComputedStyle(tr);
     const avail=top.clientWidth-document.querySelector('.tl').getBoundingClientRect().width-2*parseFloat(getComputedStyle(top).columnGap||0)-2-6;
-    const cw2=cd.scrollWidth;if(cw2>avail&&avail>0)cd.style.fontSize=(fs*avail/cw2)+'px';}}
+    const cw2=cd.scrollWidth;if(cw2>avail&&avail>0)cd.style.fontSize=(fs*avail/cw2)+'px';}
+  {const v=document.querySelector('.vsep');v.style.transform='';const cr=c.getBoundingClientRect(),vr=v.getBoundingClientRect(),tw=trow.getBoundingClientRect();const sh=((tw.left-vr.right)-(vr.left-cr.right))/2;if(Math.abs(sh)>.5)v.style.transform='translateX('+sh.toFixed(1)+'px)';}}
 tick();setInterval(tick,10000);addEventListener('resize',()=>setTimeout(fitHead,100));(document.fonts?document.fonts.ready:Promise.resolve()).then(fitHead);
 
 // Wetter: Open-Meteo (DWD-Modelle), Lingen
