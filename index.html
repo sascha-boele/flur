@@ -253,8 +253,9 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
   .spcon{grid-column:1/-1}
   .shopdlg{width:calc(130*var(--u))}
   .paintdlg{width:calc(150*var(--u))}
-  .cal li button{font-size:calc(2.8*var(--u));font-weight:600;grid-template-columns:calc(10*var(--u)) 1fr;padding:calc(.9*var(--u)) calc(.6*var(--u))}
-  .cal li time{font-size:calc(2.6*var(--u))}
+  .cal li button{font-size:calc(2.9*var(--u));font-weight:600;grid-template-columns:1fr;gap:calc(.2*var(--u));padding:calc(.9*var(--u)) calc(.6*var(--u));line-height:1.2;overflow-wrap:anywhere;hyphens:auto}
+  .cal li time{font-size:calc(2*var(--u));font-weight:700}
+  #kw{display:none}
   .cal .day{font-size:calc(2.2*var(--u))}
   .cal ul{gap:calc(.5*var(--u))}
   .advent{font-size:calc(1.7*var(--u))}
@@ -391,7 +392,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='43';
+const BUILD='44';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -687,7 +688,7 @@ pThumb();
     sn.innerHTML=h;}
   const xmas=new Date(y,11,24),days=Math.ceil((xmas-new Date(y,m,d))/864e5);
   const star='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.5-5.2 4.4 1.6 6.6L12 16.3 6.2 19.8l1.6-6.6L2.6 8.8l6.8-.5z"/></svg>';
-  if(days>0&&days<=40)$('advent').innerHTML=star+'noch '+days+(days===1?' Tag':' Tage')+' bis Heiligabend';
+  if(days>0&&days<=40)$('advent').innerHTML=star+'noch '+days+(days===1?' Tag':' Tage')+' bis Weihnachten';
   else if(days===0)$('advent').innerHTML=star+'Frohe Weihnachten';})();
 }
 </script>
