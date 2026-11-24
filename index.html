@@ -159,7 +159,9 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .trow{display:flex;align-items:center;gap:calc(1.5*var(--u))}
 .top .temp{font:800 calc(13*var(--u))/.9 "Red Hat Display",sans-serif;letter-spacing:-.03em}
 .wicon svg{width:calc(11*var(--u));height:calc(11*var(--u));overflow:visible}
-.date{white-space:nowrap;margin-top:calc(1*var(--u))}
+.date{white-space:nowrap;margin-top:calc(1*var(--u));display:inline-block}
+.clock{display:inline-block}
+.tl{display:flex;flex-direction:column;align-items:flex-start}
 .top .cond{color:var(--mute);margin-top:calc(.6*var(--u));white-space:nowrap;font-family:"Red Hat Display"}
 .top .cond#wc{margin-top:calc(1*var(--u))}
 /* animierte Wettersymbole */
@@ -347,7 +349,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='29';
+const BUILD='30';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
