@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;800&family=Red+Hat+Text:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* VOICE: ruhig, auf einen Blick lesbar im Vorbeigehen, nachts nicht grell
@@ -286,6 +287,20 @@ html,body{background:#e3d8c6}
 .shopbtn:active{background:rgba(255,255,255,.8)}
 .hc i{background:rgba(255,255,255,.55)}
 .cammsg{background:rgba(255,255,255,.35)}
+
+/* Gäste-WLAN */
+.wifib{position:absolute;top:calc(1.6*var(--u));right:calc(9.6*var(--u));height:calc(6.5*var(--u));display:flex;align-items:center;gap:calc(1*var(--u));padding:0 calc(2.2*var(--u));border-radius:calc(3.25*var(--u));border:1px solid rgba(255,255,255,.8);background:rgba(251,249,245,.9);color:var(--t);font:700 calc(2.3*var(--u)) "Red Hat Display";cursor:pointer;z-index:2}
+.wifib svg{width:calc(3.4*var(--u));height:calc(3.4*var(--u))}
+.wifib:active{background:#fff}
+.wifidlg{width:calc(100*var(--u))}
+.wifibox{display:flex;gap:calc(4*var(--u));align-items:center;margin-top:calc(2*var(--u))}
+#wifiqr{flex:none;width:calc(44*var(--u));height:calc(44*var(--u));background:#fff;border-radius:calc(2*var(--u));padding:calc(2*var(--u));box-sizing:border-box}
+#wifiqr svg{width:100%;height:100%;display:block}
+.wifitxt{display:flex;flex-direction:column;gap:calc(.6*var(--u));min-width:0}
+.wifitxt small{font:500 calc(2.4*var(--u)) "Red Hat Text";color:var(--mute);margin-bottom:calc(2*var(--u))}
+.wifitxt span{font:600 calc(2*var(--u)) "Red Hat Text";color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.wifitxt b{font:700 calc(3.6*var(--u)) "Red Hat Display";color:var(--ink);word-break:break-all;margin-bottom:calc(1.6*var(--u))}
+.dlg select{font:500 calc(3*var(--u)) "Red Hat Text";color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:calc(1.4*var(--u));padding:calc(1.6*var(--u)) calc(2*var(--u));width:100%}
 </style>
 </head>
 <body>
@@ -318,6 +333,7 @@ html,body{background:#e3d8c6}
     <div class="cammsg" id="cammsg">Kamera wird geladen …</div>
     <div class="camdbg" id="camdbg">Skript startet …</div>
     <div class="live"><b id="camlive" hidden>LIVE</b><span class="tag">Haustür</span></div>
+    <button class="wifib" id="wifib" aria-label="Gäste-WLAN anzeigen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.6a10 10 0 0 1 14 0"/><path d="M8.5 16.2a5 5 0 0 1 7 0"/><circle cx="12" cy="19.6" r="1.1" fill="currentColor"/></svg>Gäste-WLAN</button>
     <button class="gear" id="camgear" aria-label="Kamera einstellen"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
   </section>
 
@@ -380,6 +396,24 @@ html,body{background:#e3d8c6}
       <div class="acts"><button type="button" class="del" id="camdel">Entfernen</button><button type="button" id="camx">Abbrechen</button><button class="save">Speichern</button></div>
     </form>
   </div>
+  <div class="modal" id="wifimodal">
+    <div class="dlg wifidlg">
+      <div id="wifiview">
+        <h3>Gäste-WLAN</h3>
+        <div class="wifibox"><div id="wifiqr"></div>
+          <div class="wifitxt"><small>Handykamera auf den Code halten</small><span>Netzwerk</span><b id="wifissid"></b><span>Passwort</span><b id="wifipw"></b></div></div>
+        <div class="acts"><button type="button" class="del" id="wifiedit" style="color:var(--mute)">Ändern</button><button type="button" class="save" id="wifiok">Schließen</button></div>
+      </div>
+      <form id="wifif" hidden>
+        <h3>Gäste-WLAN einrichten</h3>
+        <label>Netzwerkname (SSID)<input id="wifiin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+        <label>Passwort<input id="wifipin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+        <label>Verschlüsselung<select id="wifienc"><option value="WPA">WPA2 / WPA3</option><option value="nopass">ohne Passwort</option></select></label>
+        <div class="ok" style="color:var(--mute)">Bleibt nur auf diesem Tablet gespeichert.</div>
+        <div class="acts"><button type="button" id="wifix">Abbrechen</button><button class="save">Speichern</button></div>
+      </form>
+    </div>
+  </div>
   <div class="modal" id="shopmodal">
     <form class="dlg shopdlg" id="add">
       <h3>Einkaufszettel <span style="font:500 calc(2.2*var(--u)) 'Red Hat Text';color:var(--mute)">· einen Artikel schreiben, kurz warten, nächsten schreiben</span></h3>
@@ -415,7 +449,7 @@ html,body{background:#e3d8c6}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='52';
+const BUILD='53';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -743,6 +777,26 @@ $('psave').addEventListener('click',()=>{const r=pc.getBoundingClientRect(),sc=M
 new ResizeObserver(()=>{if($('paintmodal').classList.contains('on'))pFit(true);}).observe(pc);
 pThumb();
 
+
+// Gäste-WLAN: QR-Code (Daten nur im localStorage dieses Tablets)
+(()=>{let wt=null;const M=$('wifimodal');
+  const get=()=>{try{return JSON.parse(ls.get('flurwifi')||'null')}catch(e){return null}};
+  const esc=v=>String(v).replace(/([\\;,:"])/g,'\\$1');
+  const close=()=>{M.classList.remove('on');clearTimeout(wt);};
+  const view=()=>{const w=get();if(!w||!w.s)return edit();$('wifif').hidden=true;$('wifiview').hidden=false;
+    $('wifissid').textContent=w.s;$('wifipw').textContent=w.e==='nopass'?'– kein Passwort –':w.p;
+    const str='WIFI:T:'+(w.e==='nopass'?'nopass':'WPA')+';S:'+esc(w.s)+';'+(w.e==='nopass'?'':'P:'+esc(w.p)+';')+';';
+    try{qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];const q=qrcode(0,'M');q.addData(str);q.make();$('wifiqr').innerHTML=q.createSvgTag({cellSize:4,margin:0,scalable:true});}
+    catch(e){$('wifiqr').innerHTML='<div style="display:grid;place-items:center;height:100%;text-align:center;color:var(--mute)">QR-Code konnte nicht geladen werden</div>';}
+    clearTimeout(wt);wt=setTimeout(close,120000);};
+  const edit=()=>{const w=get()||{};$('wifiview').hidden=true;$('wifif').hidden=false;$('wifiin').value=w.s||'';$('wifipin').value=w.p||'';$('wifienc').value=w.e||'WPA';clearTimeout(wt);};
+  $('wifib').addEventListener('click',()=>{M.classList.add('on');view();});
+  $('wifiok').addEventListener('click',close);
+  $('wifiedit').addEventListener('click',edit);
+  $('wifix').addEventListener('click',()=>{get()?view():close();});
+  $('wifif').addEventListener('submit',e=>{e.preventDefault();const s=$('wifiin').value.trim();if(!s)return;ls.set('flurwifi',JSON.stringify({s,p:$('wifipin').value,e:$('wifienc').value}));view();});
+  M.addEventListener('click',e=>{if(e.target===M)close();});
+})();
 // Winter & Advent: Schneefall (20.11.–6.1.) und Countdown bis Heiligabend
 (()=>{const now=new Date(),y=now.getFullYear(),m=now.getMonth(),d=now.getDate();
   const season=(m===10&&d>=20)||m===11||(m===0&&d<=6);
