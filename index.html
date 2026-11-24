@@ -44,7 +44,7 @@ h2{font:600 2.2cqw/1 "Red Hat Text",sans-serif;color:var(--mute);margin:0 0 1.6c
 /* 2 Radar */
 .radar{padding:0;display:grid;grid-template-rows:1fr auto auto}
 .radar .fig{position:relative;min-height:22cqw}
-#map{position:absolute;inset:0;background:#0e1430}
+#map{position:absolute;inset:0;background:#0e1430;z-index:0}
 .leaflet-container{font:1.6cqw "Red Hat Text",sans-serif}
 .leaflet-control-attribution{background:rgba(11,20,51,.6)!important;color:#6c76a8!important;font-size:1.3cqw!important;line-height:1.4}
 .leaflet-control-attribution a{color:#8d97c4!important}
@@ -101,7 +101,7 @@ input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
 .cal .empty{font-size:2.2cqw;color:var(--mute);padding:.4cqw .6cqw}
 /* Termin-Fenster */
 .screen{position:relative}
-.modal{position:absolute;inset:0;background:rgba(5,10,28,.72);display:none;place-items:center;z-index:9}
+.modal{position:absolute;inset:0;background:rgba(5,10,28,.72);display:none;place-items:center;z-index:5000}
 .modal.on{display:grid}
 .dlg{width:80cqw;background:var(--card);border:1px solid var(--line);border-radius:2.6cqw;padding:4cqw;display:grid;gap:2.4cqw}
 .dlg h3{margin:0;font:700 3.6cqw "Red Hat Display"}
@@ -221,7 +221,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='11';
+const BUILD='12';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
