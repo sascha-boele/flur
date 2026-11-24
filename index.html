@@ -221,7 +221,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='12';
+const BUILD='13';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -389,15 +389,17 @@ $('add').addEventListener('submit',e=>{e.preventDefault();
 // Kamera: Reolink-Rekorder im Heimnetz, Einzelbilder per Snap-Befehl (Zugang nur lokal gespeichert)
 let cam=null,camT,camErr=0,camBusy=false;
 try{cam=JSON.parse(ls.get('flurcam')||'null');}catch(e){}
-const camUrl=()=>'http://'+cam.ip+'/cgi-bin/api.cgi?'+new URLSearchParams({cmd:'Snap',channel:String((+cam.ch||1)-1),rs:String(Date.now()),user:cam.user,password:cam.pw,width:'1280',height:'720'});
+let camProto='http';
+const camUrl=()=>camProto+'://'+cam.ip+'/cgi-bin/api.cgi?'+new URLSearchParams({cmd:'Snap',channel:String((+cam.ch||1)-1),rs:String(Date.now()),user:cam.user,password:cam.pw,width:'1280',height:'720'});
 const camMsg=t=>{$('cammsg').textContent=t;$('cammsg').hidden=!t;};
 function camTick(){clearTimeout(camT);if(!cam){camMsg('Kamera noch nicht eingerichtet – oben rechts auf das Zahnrad tippen');$('camimg').hidden=true;$('camlive').hidden=true;return;}
   if(document.hidden){camT=setTimeout(camTick,2000);return;}
   const im=new Image();const t0=Date.now();
   im.onload=()=>{$('camimg').src=im.src;$('camimg').hidden=false;$('camlive').hidden=false;camMsg('');camErr=0;
     camT=setTimeout(camTick,Math.max(150,1000/(+cam.fps||1)-(Date.now()-t0)));};
-  im.onerror=()=>{camErr++;$('camlive').hidden=true;if(camErr>=3){camMsg('Kamera nicht erreichbar. Stimmen Adresse und Zugangsdaten? In Fully muss „Mixed Content“ erlaubt sein.');$('camimg').hidden=true;}
-    camT=setTimeout(camTick,camErr>=3?10000:2000);};
+  im.onerror=()=>{camErr++;$('camlive').hidden=true;if(camErr%2===0)camProto=camProto==='http'?'https':'http';
+    if(camErr>=4){camMsg('Kamera nicht erreichbar (http und https probiert). Stimmen Adresse und Zugangsdaten? In Fully unter Advanced Web Settings „Mixed Content“ erlauben und „Ignore SSL Errors“ einschalten.');$('camimg').hidden=true;}
+    camT=setTimeout(camTick,camErr>=4?10000:1500);};
   im.src=camUrl();}
 const camOpen=()=>{$('camip').value=cam?cam.ip:'192.168.178.163';$('camch').value=cam?cam.ch:1;$('camfps').value=cam?cam.fps:1;
   $('camuser').value=cam?cam.user:'';$('campw').value=cam?cam.pw:'';$('camdel').style.visibility=cam?'visible':'hidden';$('cammodal').classList.add('on');};
