@@ -50,7 +50,8 @@ h2{font:600 2.2cqw/1 "Red Hat Text",sans-serif;color:var(--mute);margin:0 0 1.6c
 .pin{width:3cqw!important;height:3cqw!important;margin:-1.5cqw 0 0 -1.5cqw!important;border-radius:50%;background:#fff;box-shadow:0 0 0 1.2cqw rgba(255,255,255,.25)}
 .pinl{font:700 2.4cqw "Red Hat Display";color:#fff;text-shadow:0 0 .6cqw #000;white-space:nowrap;margin:-1.6cqw 0 0 2.6cqw!important;width:auto!important;height:auto!important}
 .stale{color:var(--y)}
-.radar h2{position:absolute;top:2cqw;left:2cqw;right:2cqw;z-index:2;font-size:1.9cqw}
+.sat{filter:brightness(.6) saturate(.8)}
+.radar h2{position:absolute;top:2cqw;left:2cqw;right:2cqw;z-index:1000;pointer-events:none;font-size:1.9cqw}
 .slider{display:grid;grid-template-columns:auto 1fr auto;gap:1.4cqw;align-items:center;padding:1cqw 2cqw 1.6cqw}
 .slider span{font:600 1.9cqw "Red Hat Text";color:var(--mute);white-space:nowrap}
 input[type=range]{width:100%;accent-color:var(--t);height:5cqw;margin:0}
@@ -208,7 +209,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='5';
+const BUILD='6';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD)location.replace('./?v='+m[1]);}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -284,7 +285,8 @@ $('evf').addEventListener('submit',ev=>{ev.preventDefault();const a=$('eva').che
 const WMS='https://maps.dwd.de/geoserver/dwd/wms';
 let base=null,last=0,idle;
 const map=L.map('map',{zoomControl:false,attributionControl:true,dragging:true,scrollWheelZoom:false,doubleClickZoom:true,minZoom:6,maxZoom:10}).setView([LAT,LON],8);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',attribution:'© OSM, © CARTO, Radar © DWD',maxZoom:19}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Karte © Esri, Radar © DWD',maxZoom:18,className:'sat'}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,opacity:.7,zIndex:6}).addTo(map);
 const rad=L.tileLayer.wms(WMS,{layers:'dwd:Niederschlagsradar',format:'image/png',transparent:true,opacity:.8,version:'1.3.0',tileSize:512,zIndex:5}).addTo(map);
 L.marker([LAT,LON],{icon:L.divIcon({className:'pin'}),interactive:false}).addTo(map);
 L.marker([LAT,LON],{icon:L.divIcon({className:'pinl',html:'Lingen'}),interactive:false}).addTo(map);
