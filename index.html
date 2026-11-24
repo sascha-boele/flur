@@ -192,7 +192,7 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
     <form id="add"><textarea id="item" placeholder="Mit dem Stift hineinschreiben – eine Zeile pro Artikel" aria-label="Einkaufszettel"></textarea><button id="addb" disabled>Hinzu&shy;fügen</button></form>
     <div class="ok" id="ok" aria-live="polite"></div>
   </section>
-  <p class="note">Layout-Vorschau mit Beispieldaten – Anbindung folgt</p>
+  <p class="note">Kamera und Spotify noch mit Beispielbild – Anbindung folgt</p>
   <div class="modal" id="modal">
     <form class="dlg" id="evf">
       <h3 id="evh">Neuer Termin</h3>
@@ -200,7 +200,8 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
       <label>Datum<input type="date" id="evd" required></label>
       <div class="chk"><input type="checkbox" id="eva"><span>Ganztägig</span></div>
       <div class="row2" id="evtimes"><label>Von<input type="time" id="evs" value="09:00"></label><label>Bis<input type="time" id="eve" value="10:00"></label></div>
-      <div class="acts"><button type="button" class="del" id="evdel">Löschen</button><button type="button" id="evx">Abbrechen</button><button class="save">Speichern</button></div>
+      <div class="acts"><button type="button" class="del" id="evdel">Löschen</button><button type="button" id="evx">Abbrechen</button><button class="save" id="evsave">Speichern</button></div>
+      <div class="ok" id="evmsg" aria-live="polite"></div>
     </form>
   </div>
 </main>
@@ -209,9 +210,9 @@ button:focus-visible,input:focus-visible{outline:.5cqw solid var(--y);outline-of
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='6';
+const BUILD='7';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
-  const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD)location.replace('./?v='+m[1]);}catch(e){}},120000);
+  const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
 const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tick=()=>{const d=new Date();$('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes());
@@ -246,40 +247,53 @@ async function loadWeather(){try{
 }catch(e){$('wc').textContent='Wetter nicht erreichbar';}}
 loadWeather();setInterval(loadWeather,10*60000);
 
-// Kalender (Beispieldaten, Google-Anbindung folgt)
+// Kalender: Familienkalender Böle über eigenes Google-Apps-Script
 const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const plusD=n=>{const d=new Date();d.setDate(d.getDate()+n);return iso(d);};
-let nid=1;const E=(o,s,e,t)=>({id:nid++,date:plusD(o),start:s,end:e,title:t});
-const evs=[E(0,'08:00','09:00','Zahnarzt'),E(0,'17:30','19:00','Fußballtraining'),E(0,'19:00','21:00','Elternabend'),
-  E(1,'','','Gelber Sack'),E(1,'15:00','15:30','Paket abholen'),E(3,'18:00','19:30','Sport'),E(5,'','','Geburtstag Oma'),
-  E(6,'10:00','12:00','Wochenmarkt'),E(9,'16:00','17:00','Elterngespräch'),E(12,'','','Restmüll')];
+// Zugang: einmalig per ?k=<Deployment-ID>.<Schlüssel> in der Start-URL, danach im Speicher des Tablets
+const CFG=(()=>{let k=new URLSearchParams(location.search).get('k');
+  try{if(k)localStorage.setItem('flurk',k);else k=localStorage.getItem('flurk');}catch(e){}
+  if(!k||!k.includes('.'))return null;const i=k.lastIndexOf('.');
+  return {url:'https://script.google.com/macros/s/'+k.slice(0,i)+'/exec',token:k.slice(i+1)};})();
+const api=async p=>{if(!CFG)throw new Error('nicht verbunden');
+  const q=new URLSearchParams({...p,token:CFG.token});const j=await (await fetch(CFG.url+'?'+q)).json();
+  if(j.error)throw new Error(j.error);return j;};
+let evs=[],calErr='';
 const dayName=ds=>{const t=iso(new Date());if(ds===t)return'Heute';if(ds===plusD(1))return'Morgen';
   return new Date(ds+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});};
 const renderCal=()=>{const now=new Date(),t=iso(now),hm=pad(now.getHours())+':'+pad(now.getMinutes());
-  const list=evs.filter(e=>e.date>=t).sort((a,b)=>(a.date+(a.start||'00:00')).localeCompare(b.date+(b.start||'00:00')));
-  const days=[...new Set([t,...list.map(e=>e.date)])];
-  $('cal').innerHTML=days.map(d=>{const its=list.filter(e=>e.date===d);
-    return `<div class="day">${dayName(d)}</div>`+(its.length?`<ul>${its.map(e=>{const done=d===t&&e.end&&e.end<=hm;
-      return `<li class="${done?'done':''}"><button data-id="${e.id}"><time>${e.start||'ganztags'}</time><span>${esc(e.title)}</span></button></li>`;}).join('')}</ul>`:'<div class="empty">Keine Termine</div>');}).join('');};
-renderCal();setInterval(renderCal,60000);
+  const list=evs.filter(e=>(e.endDate||e.date)>=t).map(e=>({...e,show:e.date<t?t:e.date}))
+    .sort((a,b)=>(a.show+(a.start||'00:00')).localeCompare(b.show+(b.start||'00:00')));
+  const days=[...new Set([t,...list.map(e=>e.show)])];
+  $('cal').innerHTML=(calErr?`<div class="empty stale">${esc(calErr)}</div>`:'')+days.map(d=>{const its=list.filter(e=>e.show===d);
+    return `<div class="day">${dayName(d)}</div>`+(its.length?`<ul>${its.map(e=>{const done=d===t&&e.end&&e.endDate===t&&e.end<=hm;
+      return `<li class="${done?'done':''}"><button data-id="${esc(e.id)}"><time>${e.start||'ganztags'}</time><span>${esc(e.title)}</span></button></li>`;}).join('')}</ul>`:'<div class="empty">Keine Termine</div>');}).join('');};
+async function loadCal(){try{evs=(await api({action:'list',days:21})).events;calErr='';}
+  catch(e){calErr=CFG?'Kalender gerade nicht erreichbar':'Kalender nicht verbunden';}renderCal();}
+renderCal();loadCal();setInterval(loadCal,5*60000);setInterval(renderCal,60000);
 const kw=d=>{d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-n);
   return Math.ceil(((d-new Date(Date.UTC(d.getUTCFullYear(),0,1)))/864e5+1)/7);};
 $('kw').textContent='KW '+kw(new Date());
-let edit=null;
+let edit=null,busy=false;
 const syncAll=()=>{const a=$('eva').checked;$('evtimes').style.display=a?'none':'grid';};
-const openDlg=e=>{edit=e||null;$('evh').textContent=e?'Termin bearbeiten':'Neuer Termin';$('evdel').style.visibility=e?'visible':'hidden';
+const lock=e=>!!(e&&e.recurring);
+const openDlg=e=>{edit=e||null;const ro=lock(e);$('evh').textContent=e?(ro?'Serientermin (bitte am Handy ändern)':'Termin bearbeiten'):'Neuer Termin';
+  $('evdel').style.visibility=e&&!ro?'visible':'hidden';$('evsave').style.display=ro?'none':'';$('evmsg').textContent='';
   $('evt').value=e?e.title:'';$('evd').value=e?e.date:plusD(0);$('eva').checked=e?!e.start:false;
-  $('evs').value=e&&e.start?e.start:'09:00';$('eve').value=e&&e.end?e.end:'10:00';syncAll();$('modal').classList.add('on');setTimeout(()=>$('evt').focus(),50);};
+  $('evs').value=e&&e.start?e.start:'09:00';$('eve').value=e&&e.end?e.end:'10:00';syncAll();$('modal').classList.add('on');if(!e)setTimeout(()=>$('evt').focus(),50);};
 const closeDlg=()=>{$('modal').classList.remove('on');};
+const run=async(p)=>{if(busy)return;busy=true;$('evmsg').textContent='Wird gespeichert …';
+  try{await api(p);closeDlg();await loadCal();}catch(e){$('evmsg').textContent='Hat nicht geklappt: '+e.message;}busy=false;};
 $('plus').addEventListener('click',()=>openDlg());
-$('cal').addEventListener('click',ev=>{const b=ev.target.closest('button[data-id]');if(b)openDlg(evs.find(x=>x.id===+b.dataset.id));});
+$('cal').addEventListener('click',ev=>{const b=ev.target.closest('button[data-id]');if(b)openDlg(evs.find(x=>x.id===b.dataset.id));});
 $('eva').addEventListener('change',syncAll);
+$('evs').addEventListener('change',()=>{const [h,m]=$('evs').value.split(':').map(Number);if($('eve').value<=$('evs').value)$('eve').value=pad(Math.min(23,h+1))+':'+pad(m);});
 $('evx').addEventListener('click',closeDlg);
 $('modal').addEventListener('click',ev=>{if(ev.target===$('modal'))closeDlg();});
-$('evdel').addEventListener('click',()=>{if(edit)evs.splice(evs.indexOf(edit),1);closeDlg();renderCal();});
+$('evdel').addEventListener('click',()=>{if(edit)run({action:'delete',id:edit.id});});
 $('evf').addEventListener('submit',ev=>{ev.preventDefault();const a=$('eva').checked;
-  const o={title:$('evt').value.trim(),date:$('evd').value,start:a?'':$('evs').value,end:a?'':$('eve').value};
-  if(!o.title||!o.date)return;if(edit)Object.assign(edit,o);else evs.push({id:nid++,...o});closeDlg();renderCal();});
+  const o={title:$('evt').value.trim(),date:$('evd').value,allDay:a?'1':'0',start:a?'':$('evs').value,end:a?'':$('eve').value};
+  if(!o.title||!o.date)return;run(edit?{action:'update',id:edit.id,...o}:{action:'create',...o});});
 
 // Regenradar: DWD-Niederschlagsradar (WMS) inkl. Nowcast bis +2 h
 const WMS='https://maps.dwd.de/geoserver/dwd/wms';
@@ -314,9 +328,10 @@ const ta=$('item'),ab=$('addb');let okT;
 ta.addEventListener('input',()=>{ab.disabled=!ta.value.trim();});
 $('add').addEventListener('submit',e=>{e.preventDefault();
   const lines=ta.value.split('\n').map(s=>s.trim()).filter(Boolean);if(!lines.length)return;
-  // TODO Anbindung: Zeilen an den Termin "Einkaufszettel" im Familienkalender anhängen
-  $('ok').textContent='✓ '+lines.join(', ')+' zum Einkaufszettel hinzugefügt';
-  ta.value='';ab.disabled=true;clearTimeout(okT);okT=setTimeout(()=>{$('ok').textContent='';},6000);});
+  ab.disabled=true;$('ok').textContent='Wird eingetragen …';
+  api({action:'shop_add',items:lines.join('\n')}).then(()=>{$('ok').textContent='✓ '+lines.join(', ')+' steht auf dem Einkaufszettel';ta.value='';})
+    .catch(()=>{$('ok').textContent='Hat nicht geklappt – bitte nochmal tippen';ab.disabled=false;})
+    .finally(()=>{clearTimeout(okT);okT=setTimeout(()=>{$('ok').textContent='';},8000);});});
 }
 </script>
 </body>
