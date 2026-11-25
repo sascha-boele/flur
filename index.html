@@ -361,7 +361,8 @@ html.dark .wifidlg #wifiqr{background:#fff}
 .xfx .walk.stand .la,.xfx .walk.stand .lb,.xfx .walk.stand .deer{animation-play-state:paused}
 @keyframes xleg{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
 .xsp{position:absolute;width:calc(1.1*var(--u));height:calc(1.1*var(--u));border-radius:50%;background:radial-gradient(circle,#fff 0,#ffe39a 40%,rgba(255,210,90,0) 70%);pointer-events:none}
-.frost{display:inline-grid;align-self:flex-start;color:#6d8fb3;margin-left:calc(-.6*var(--u))}
+.top .trow{position:relative}
+.frost{position:absolute;left:calc(-1.2*var(--u));top:calc(-1.4*var(--u));display:grid;color:#6d8fb3;pointer-events:none}
 .frost svg{width:calc(4.2*var(--u));height:calc(4.2*var(--u));animation:spin 14s linear infinite}
 html.dark .frost{color:#a9c3e0}
 @media(prefers-reduced-motion:reduce){.xfx{display:none}}
@@ -434,8 +435,8 @@ html.dark .frost{color:#a9c3e0}
       <div class="ok" id="okcard" aria-live="polite"></div>
     </section>
     <section class="card paint">
-      <h2>Malen <span id="pdate"></span></h2>
-      <button class="shopbtn" id="paintopen"><svg id="painticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg><span id="ptext"></span></button>
+      <h2>Notizen <span id="pdate"></span></h2>
+      <button class="shopbtn" id="paintopen"><svg id="painticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M8 11h8M8 15h8M8 19h5"/></svg><span id="ptext"></span></button>
     </section>
   </div>
   
@@ -514,7 +515,7 @@ html.dark .frost{color:#a9c3e0}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='62';
+const BUILD='63';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
