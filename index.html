@@ -541,7 +541,7 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='69';
+const BUILD='70';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -964,10 +964,11 @@ const FLYLEGS = `
    <path d="M40 60 Q31 69 21 71" fill="none" stroke="#8a5a34" stroke-width="3.4" stroke-linecap="round"/><path d="M21 71 l-4 1" stroke="#2b2118" stroke-width="3.6" stroke-linecap="round"/></g>`;
 const WALKLEGS = `
  <g fill="none" stroke-linecap="round" stroke-width="3.4">
-  <path class="la" d="M34 60 Q31 68 33 75 L32 85" stroke="#7a4e2c"/><path class="lb" d="M42 61 L42 85" stroke="#8a5a34"/>
-  <path class="lb" d="M64 60 Q62 70 63 75 L61 85" stroke="#7a4e2c"/><path class="la" d="M71 58 L74 85" stroke="#8a5a34"/>
- </g>
- <g fill="#2b2118"><rect x="30" y="84" width="4.5" height="2.6" rx="1"/><rect x="40" y="84" width="4.5" height="2.6" rx="1"/><rect x="59" y="84" width="4.5" height="2.6" rx="1"/><rect x="72" y="84" width="4.5" height="2.6" rx="1"/></g>`;
+  <g class="la"><path d="M34 60 Q31 68 33 75 L32 84" stroke="#7a4e2c"/><rect x="29.8" y="83.4" width="4.6" height="2.8" rx="1" fill="#2b2118" stroke="none"/></g>
+  <g class="lb"><path d="M42 61 L42 84" stroke="#8a5a34"/><rect x="39.7" y="83.4" width="4.6" height="2.8" rx="1" fill="#2b2118" stroke="none"/></g>
+  <g class="lb"><path d="M64 60 Q62 70 63 75 L61 84" stroke="#7a4e2c"/><rect x="58.8" y="83.4" width="4.6" height="2.8" rx="1" fill="#2b2118" stroke="none"/></g>
+  <g class="la"><path d="M71 58 L74 84" stroke="#8a5a34"/><rect x="71.8" y="83.4" width="4.6" height="2.8" rx="1" fill="#2b2118" stroke="none"/></g>
+ </g>`;
 const NOSE = (red)=> red?`<circle class="rn" cx="103.6" cy="28.6" r="2.8" fill="#e5332a"/><circle cx="102.8" cy="27.8" r=".8" fill="#ff9a8f"/>`:`<circle cx="103.4" cy="28.6" r="2" fill="#2b2118"/>`;
 
 const SLEIGH = (rider) => `
