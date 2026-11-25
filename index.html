@@ -6,6 +6,7 @@
 <title>Flur-Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Amatic+SC:wght@700&family=Caveat:wght@600&family=Cormorant+Garamond:ital,wght@1,600&family=Dancing+Script:wght@600&family=Josefin+Sans:wght@300&family=Lora:ital,wght@1,500&family=Merriweather:ital,wght@1,400&family=Playfair+Display:ital,wght@1,600&family=Satisfy&display=swap">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;800&family=Red+Hat+Text:wght@400;500;600&display=swap" rel="stylesheet">
@@ -387,14 +388,22 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
 
 /* Mittelspalte: Kamera oben im echten Bildformat, darunter Spruch des Tages */
 .mid{grid-area:cam;display:flex;flex-direction:column;gap:calc(2.2*var(--u));min-height:0;min-width:0}
-.mid .cam{flex:none;width:100%;aspect-ratio:16/9;min-height:0;max-height:78%}
-.quote{flex:1 1 0;min-height:calc(10*var(--u));display:flex;flex-direction:column}
-.quote h2{margin-bottom:calc(.8*var(--u))}
-.qbox{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;overflow:hidden;padding:0 calc(1.5*var(--u))}
-#qtext{margin:0;font:600 italic calc(3.4*var(--u))/1.3 "Red Hat Display";color:var(--ink);quotes:"„" "“"}
+.mid .cam{flex:none;width:100%;aspect-ratio:16/9;min-height:0;max-height:80%}
+.quote{flex:1 1 0;min-height:calc(10*var(--u));display:flex;flex-direction:column;padding-bottom:calc(1.8*var(--u))}
+.quote h2{margin-bottom:calc(.4*var(--u))}
+.qwrap{flex:1;min-height:0;display:flex;align-items:center;gap:calc(2*var(--u))}
+.qbox{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:center;overflow:hidden;transition:opacity .35s,transform .35s}
+.qbox.out{opacity:0;transform:translateY(calc(1*var(--u)))}
+#qtext{margin:0;line-height:1.18;color:var(--ink);quotes:"„" "“";text-wrap:balance}
 #qtext::before{content:open-quote;color:var(--y)}#qtext::after{content:close-quote;color:var(--y)}
-#qauth{display:block;margin-top:calc(.8*var(--u));font:500 normal calc(2*var(--u)) "Red Hat Text";color:var(--mute);text-align:right}
-#qauth::before{content:"– "}
+#qauth{display:block;margin-top:calc(.6*var(--u));font:600 normal calc(2.1*var(--u)) "Red Hat Text";color:var(--t);text-align:right;letter-spacing:.02em}
+#qauth::before{content:"— "}
+.qdial{all:unset;flex:none;cursor:pointer;width:calc(9*var(--u));height:calc(9*var(--u));border-radius:50%;filter:drop-shadow(0 calc(.4*var(--u)) calc(.8*var(--u)) rgba(80,60,30,.28));-webkit-tap-highlight-color:transparent}
+.qdial svg{width:100%;height:100%;display:block}
+.qdial .qrot{transform-origin:50px 50px;transform-box:view-box}
+.qdial.spin .qrot{animation:qspin .9s cubic-bezier(.2,.7,.2,1)}
+.qdial:active{transform:scale(.94)}
+@keyframes qspin{from{transform:rotate(0)}to{transform:rotate(-540deg)}}
 </style>
 </head>
 <body>
@@ -434,7 +443,11 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
   </section>
   <section class="card quote" id="quote">
     <h2>Spruch des Tages</h2>
-    <div class="qbox"><blockquote id="qtext"></blockquote><cite id="qauth"></cite></div>
+    <div class="qwrap"><div class="qbox" id="qbox"><blockquote id="qtext"></blockquote><cite id="qauth"></cite></div>
+    <button class="qdial" id="qdial" aria-label="Neuer Spruch"><svg viewBox="0 0 100 100"><defs><radialGradient id="qdg" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#efe6d6"/><stop offset="1" stop-color="#cbb894"/></radialGradient></defs>
+      <g class="qrot"><circle cx="50" cy="50" r="46" fill="#b8892d"/><g fill="#d6a74a"><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(0 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(20 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(40 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(60 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(80 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(100 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(120 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(140 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(160 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(180 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(200 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(220 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(240 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(260 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(280 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(300 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(320 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(340 50 50)"/></g>
+      <circle cx="50" cy="50" r="38" fill="url(#qdg)" stroke="#fff" stroke-width="1.5"/><circle cx="50" cy="20" r="4" fill="#2f5d50"/>
+      <path d="M36 52a14 14 0 1 0 4-10" fill="none" stroke="#2f5d50" stroke-width="5" stroke-linecap="round"/><path d="M33 36l7 6.5-9 2.5z" fill="#2f5d50"/></g></svg></button></div>
   </section>
   </div>
 
@@ -558,7 +571,7 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='71';
+const BUILD='72';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -927,126 +940,93 @@ pThumb();
   const star='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.5-5.2 4.4 1.6 6.6L12 16.3 6.2 19.8l1.6-6.6L2.6 8.8l6.8-.5z"/></svg>';
   if(days>0&&days<=40)$('advent').innerHTML=star+'noch '+days+(days===1?' Tag':' Tage')+' bis Weihnachten';
   else if(days===0)$('advent').innerHTML=star+'Frohe Weihnachten';})();
-// Spruch des Tages (im Dezember bis 26.12. abwechselnd mit Weihnachtssprüchen)
+// Spruch des Tages: philosophische Zitate mit Urheber, wechselnde Schriftart, Text füllt die Kachel; Drehrad zeigt einen neuen Spruch
 (()=>{const QUOTES=[
-["Wer immer tut, was er schon kann, bleibt immer das, was er schon ist.","Sprichwort"],
-["Auch aus Steinen, die einem in den Weg gelegt werden, kann man Schönes bauen.","Sprichwort"],
-["Es ist nicht wenig Zeit, die wir haben, sondern viel Zeit, die wir nicht nutzen.","Seneca"],
-["Der Weg ist das Ziel.","Konfuzius"],
-["Wer kämpft, kann verlieren. Wer nicht kämpft, hat schon verloren.","Sprichwort"],
-["Phantasie ist wichtiger als Wissen, denn Wissen ist begrenzt.","Albert Einstein"],
-["Glück ist das Einzige, das sich verdoppelt, wenn man es teilt.","Albert Schweitzer"],
-["Man sieht nur mit dem Herzen gut. Das Wesentliche ist für die Augen unsichtbar.","Antoine de Saint-Exupéry"],
-["Lachen ist die beste Medizin.","Sprichwort"],
-["Morgenstund hat Gold im Mund.","Sprichwort"],
-["Wer zuletzt lacht, lacht am besten.","Sprichwort"],
-["Übung macht den Meister.","Sprichwort"],
-["In der Ruhe liegt die Kraft.","Sprichwort"],
-["Was du heute kannst besorgen, das verschiebe nicht auf morgen.","Sprichwort"],
-["Ein Lächeln ist die kürzeste Verbindung zwischen zwei Menschen.","Victor Borge"],
-["Die beste Zeit, einen Baum zu pflanzen, war vor zwanzig Jahren. Die nächstbeste ist jetzt.","Chinesisches Sprichwort"],
-["Wo ein Wille ist, ist auch ein Weg.","Sprichwort"],
-["Geteilte Freude ist doppelte Freude, geteiltes Leid ist halbes Leid.","Sprichwort"],
-["Es gibt kein schlechtes Wetter, nur falsche Kleidung.","Sprichwort"],
-["Jeder Tag ist ein neuer Anfang.","Sprichwort"],
-["Wer nicht wagt, der nicht gewinnt.","Sprichwort"],
-["Kleine Schritte sind besser als große Pläne, die nie beginnen.","Sprichwort"],
-["Das Leben ist zu kurz für schlechten Kaffee.","Sprichwort"],
-["Ordnung ist das halbe Leben – die andere Hälfte ist schöner.","Sprichwort"],
-["Wer A sagt, muss nicht B sagen. Er kann auch erkennen, dass A falsch war.","Bertolt Brecht"],
-["Die Zukunft hängt davon ab, was wir heute tun.","Mahatma Gandhi"],
-["Sei du selbst die Veränderung, die du dir wünschst für diese Welt.","Mahatma Gandhi"],
 ["Nicht weil es schwer ist, wagen wir es nicht, sondern weil wir es nicht wagen, ist es schwer.","Seneca"],
-["Das Glück deines Lebens hängt von der Beschaffenheit deiner Gedanken ab.","Mark Aurel"],
-["Wenn du es eilig hast, gehe langsam.","Konfuzius"],
-["Wer das Ziel kennt, kann entscheiden.","Konfuzius"],
-["Der Mensch ist nur da ganz Mensch, wo er spielt.","Friedrich Schiller"],
-["Ohne Musik wäre das Leben ein Irrtum.","Friedrich Nietzsche"],
-["Was mich nicht umbringt, macht mich stärker.","Friedrich Nietzsche"],
-["Humor ist der Knopf, der verhindert, dass uns der Kragen platzt.","Joachim Ringelnatz"],
-["Sicher ist, dass nichts sicher ist. Selbst das nicht.","Joachim Ringelnatz"],
-["Es gibt nichts Gutes, außer man tut es.","Erich Kästner"],
-["Wer nur an sich denkt, lebt nicht wirklich.","Erich Kästner"],
-["Das Schönste, was wir erleben können, ist das Geheimnisvolle.","Albert Einstein"],
-["Wer sich selbst nicht zu lachen versteht, hat zu wenig Humor.","Sprichwort"],
-["Freundschaft ist eine Seele in zwei Körpern.","Aristoteles"],
-["Das Ganze ist mehr als die Summe seiner Teile.","Aristoteles"],
-["Wir sind, was wir wiederholt tun.","Aristoteles"],
+["Es ist nicht wenig Zeit, die wir haben, sondern es ist viel Zeit, die wir nicht nutzen.","Seneca"],
+["Wer überall ist, ist nirgends.","Seneca"],
+["Das Glück deines Lebens hängt von der Beschaffenheit deiner Gedanken ab.","Marc Aurel"],
+["Verschwende keine Zeit mehr damit, zu erörtern, was ein guter Mensch ist. Sei einer.","Marc Aurel"],
+["Nicht die Dinge selbst beunruhigen die Menschen, sondern ihre Vorstellungen von den Dingen.","Epiktet"],
 ["Ich weiß, dass ich nichts weiß.","Sokrates"],
-["Alles fließt.","Heraklit"],
+["Ein ungeprüftes Leben ist nicht lebenswert.","Sokrates"],
+["Man kann nicht zweimal in denselben Fluss steigen.","Heraklit"],
 ["Nichts ist so beständig wie der Wandel.","Heraklit"],
-["Der Anfang ist die Hälfte des Ganzen.","Aristoteles"],
-["Wer langsam geht, kommt auch ans Ziel.","Sprichwort"],
-["Lieber ein Ende mit Schrecken als ein Schrecken ohne Ende.","Sprichwort"],
-["Hunde, die bellen, beißen nicht.","Sprichwort"],
-["Gut Ding will Weile haben.","Sprichwort"],
-["Ende gut, alles gut.","Sprichwort"],
-["Aller Anfang ist schwer.","Sprichwort"],
-["Wer rastet, der rostet.","Sprichwort"],
-["Eile mit Weile.","Sprichwort"],
-["Ohne Fleiß kein Preis.","Sprichwort"],
-["Steter Tropfen höhlt den Stein.","Sprichwort"],
-["Viele Köche verderben den Brei.","Sprichwort"],
-["Der frühe Vogel fängt den Wurm – aber die zweite Maus bekommt den Käse.","Sprichwort"],
-["Das Leben ist wie Fahrradfahren. Um die Balance zu halten, musst du in Bewegung bleiben.","Albert Einstein"],
-["Die Kunst ist, einmal mehr aufzustehen, als man umgeworfen wird.","Sprichwort"],
-["Ein Pessimist sieht in jeder Chance eine Schwierigkeit, ein Optimist in jeder Schwierigkeit eine Chance.","Winston Churchill"],
-["Tu erst das Notwendige, dann das Mögliche, und plötzlich schaffst du das Unmögliche.","Sprichwort"],
-["Wer glücklich ist, kann glücklich machen.","Sprichwort"],
-["Gib jedem Tag die Chance, der schönste deines Lebens zu werden.","Sprichwort"],
-["Zum Glück gibt es Kaffee.","Familie Böle"],
-["Wer anderen eine Grube gräbt, fällt selbst hinein.","Sprichwort"],
-["Kommt Zeit, kommt Rat.","Sprichwort"],
-["Not macht erfinderisch.","Sprichwort"],
-["Reden ist Silber, Schweigen ist Gold.","Sprichwort"],
-["Der Apfel fällt nicht weit vom Stamm.","Sprichwort"],
-["Lügen haben kurze Beine.","Sprichwort"],
-["Wer suchet, der findet.","Sprichwort"],
-["Hoffnung ist nicht die Überzeugung, dass etwas gut ausgeht, sondern die Gewissheit, dass etwas Sinn hat.","Václav Havel"],
-["Man muss das Unmögliche versuchen, um das Mögliche zu erreichen.","Hermann Hesse"],
-["Und jedem Anfang wohnt ein Zauber inne.","Hermann Hesse"],
-["Glück ist Liebe, nichts anderes.","Hermann Hesse"],
-["Edel sei der Mensch, hilfreich und gut.","Johann Wolfgang von Goethe"],
-["Es ist nicht genug zu wissen, man muss auch anwenden.","Johann Wolfgang von Goethe"],
+["Eine Schwalbe macht noch keinen Sommer.","Aristoteles"],
+["Das Ganze ist mehr als die Summe seiner Teile.","Aristoteles"],
+["Der Anfang ist der wichtigste Teil der Arbeit.","Platon"],
+["Glück wohnt nicht im Besitz und nicht im Golde, das Glück ist in der Seele zu Hause.","Demokrit"],
+["Wem genug zu wenig ist, dem ist nichts genug.","Epikur"],
+["Lernen, ohne zu denken, ist vergeblich. Denken, ohne zu lernen, ist gefährlich.","Konfuzius"],
+["Was du nicht willst, dass man dir tu, das füg auch keinem andern zu.","Konfuzius"],
+["Auch die längste Reise beginnt mit dem ersten Schritt.","Laozi"],
+["Wer andere kennt, ist klug. Wer sich selbst kennt, ist weise.","Laozi"],
+["Habe Mut, dich deines eigenen Verstandes zu bedienen!","Immanuel Kant"],
+["Der bestirnte Himmel über mir und das moralische Gesetz in mir.","Immanuel Kant"],
+["Es ist nicht genug zu wissen, man muss auch anwenden; es ist nicht genug zu wollen, man muss auch tun.","Johann Wolfgang von Goethe"],
 ["Willst du immer weiter schweifen? Sieh, das Gute liegt so nah.","Johann Wolfgang von Goethe"],
+["Edel sei der Mensch, hilfreich und gut.","Johann Wolfgang von Goethe"],
 ["Wer fertig ist, dem ist nichts recht zu machen; ein Werdender wird immer dankbar sein.","Johann Wolfgang von Goethe"],
-["Die Axt im Haus erspart den Zimmermann.","Friedrich Schiller"],
-["Drum prüfe, wer sich ewig bindet.","Friedrich Schiller"],
-["Gefährlich ist's, den Leu zu wecken.","Friedrich Schiller"],
-["Der kluge Mann baut vor.","Friedrich Schiller"],
-["Das Leben ist schön – von einfach war nie die Rede.","Sprichwort"],
-["Heute ist ein guter Tag für einen guten Tag.","Sprichwort"],
-["Kaffee zuerst, Entscheidungen später.","Sprichwort"],
-["Schuhe aus, Herz auf.","Familie Böle"],
-["Zu Hause ist da, wo der Hund schon an der Tür wartet.","Familie Böle"],
-["Gute Laune ist ansteckend – also los!","Familie Böle"],
-["Nicht vergessen: Schlüssel, Handy, gute Laune.","Familie Böle"],
-["Wer rausgeht, kommt auch wieder rein. Meistens jedenfalls.","Familie Böle"]
+["Der Mensch ist nur da ganz Mensch, wo er spielt.","Friedrich Schiller"],
+["Wer ein Warum zum Leben hat, erträgt fast jedes Wie.","Friedrich Nietzsche"],
+["Ohne Musik wäre das Leben ein Irrtum.","Friedrich Nietzsche"],
+["Man muss noch Chaos in sich haben, um einen tanzenden Stern gebären zu können.","Friedrich Nietzsche"],
+["Was mich nicht umbringt, macht mich stärker.","Friedrich Nietzsche"],
+["Das Schicksal mischt die Karten, und wir spielen.","Arthur Schopenhauer"],
+["Neun Zehntel unseres Glückes beruhen allein auf der Gesundheit.","Arthur Schopenhauer"],
+["Ich kann freilich nicht sagen, ob es besser werden wird, wenn es anders wird; aber so viel kann ich sagen: Es muss anders werden, wenn es gut werden soll.","Georg Christoph Lichtenberg"],
+["Und jedem Anfang wohnt ein Zauber inne.","Hermann Hesse"],
+["Man muss das Unmögliche versuchen, um das Mögliche zu erreichen.","Hermann Hesse"],
+["Habe Geduld gegen alles Ungelöste in deinem Herzen.","Rainer Maria Rilke"],
+["Philosophieren heißt sterben lernen.","Michel de Montaigne"],
+["Das Herz hat seine Gründe, die der Verstand nicht kennt.","Blaise Pascal"],
+["Alles Unglück der Menschen rührt daher, dass sie nicht ruhig in einem Zimmer bleiben können.","Blaise Pascal"],
+["Wir müssen unseren Garten bestellen.","Voltaire"],
+["Frieden ist nicht die Abwesenheit von Krieg, sondern eine Tugend, eine Geisteshaltung.","Baruch de Spinoza"],
+["Das Leben kann nur rückwärts verstanden, aber nur vorwärts gelebt werden.","Søren Kierkegaard"],
+["Ich denke, also bin ich.","René Descartes"],
+["Wo aber Gefahr ist, wächst das Rettende auch.","Friedrich Hölderlin"],
+["Wohin gehen wir denn? Immer nach Hause.","Novalis"],
+["Musik wird oft nicht schön gefunden, weil sie stets mit Geräusch verbunden.","Wilhelm Busch"],
+["Es ist ein Brauch von alters her: Wer Sorgen hat, hat auch Likör.","Wilhelm Busch"],
+["Phantasie ist wichtiger als Wissen, denn Wissen ist begrenzt.","Albert Einstein"],
+["Das Leben ist wie Fahrradfahren. Um die Balance zu halten, musst du in Bewegung bleiben.","Albert Einstein"],
+["Ich bin Leben, das leben will, inmitten von Leben, das leben will.","Albert Schweitzer"],
+["Man sieht nur mit dem Herzen gut. Das Wesentliche ist für die Augen unsichtbar.","Antoine de Saint-Exupéry"],
+["Es gibt nichts Gutes, außer: Man tut es.","Erich Kästner"],
+["Humor ist der Knopf, der verhindert, dass uns der Kragen platzt.","Joachim Ringelnatz"],
+["Dankbarkeit ist nicht nur die größte aller Tugenden, sondern die Mutter von allen.","Cicero"],
+["In dir muss brennen, was du in anderen entzünden willst.","Augustinus"],
+["Wissen ist Macht.","Francis Bacon"],
+["Mögen hätt' ich schon wollen, aber dürfen hab ich mich nicht getraut.","Karl Valentin"],
+["Ich habe einen ganz einfachen Geschmack: Ich bin immer mit dem Besten zufrieden.","Oscar Wilde"]
 ];
 const XMAS=[
-["Weihnachten ist nicht ein Datum, sondern ein Gefühl.","Sprichwort"],
-["Advent heißt Warten – auf das Licht.","Sprichwort"],
 ["Lasst uns froh und munter sein.","Volkslied"],
-["Alle Jahre wieder.","Volkslied"],
 ["Morgen, Kinder, wird's was geben.","Volkslied"],
-["Die schönsten Geschenke liegen nicht unterm Baum, sondern sitzen drumherum.","Sprichwort"],
-["Kekse zählen in der Adventszeit nicht.","Familie Böle"],
-["Ein bisschen Glitzer schadet nie.","Sprichwort"],
 ["Advent, Advent, ein Lichtlein brennt.","Volksgut"],
-["Wer Weihnachten nicht im Herzen trägt, findet es auch nicht unter dem Baum.","Sprichwort"],
-["Zeit ist das schönste Geschenk.","Sprichwort"],
-["Dezember: Plätzchen backen ist offiziell Sport.","Familie Böle"]
+["Von drauß' vom Walde komm ich her; ich muss euch sagen, es weihnachtet sehr!","Theodor Storm"],
+["Markt und Straßen stehn verlassen, still erleuchtet jedes Haus.","Joseph von Eichendorff"]
 ];
 
+  const FONTS=[['Playfair Display','italic 600'],['Lora','italic 500'],['Cormorant Garamond','italic 600'],['Caveat','600'],['Dancing Script','600'],['Merriweather','italic 400'],['Abril Fatface','400'],['Josefin Sans','300'],['Satisfy','400'],['Amatic SC','700']];
   const ar=ls.get('flurcamar');if(ar)document.querySelector('.cam').style.aspectRatio=ar;
-  const fit=()=>{const t=$('qtext'),box=document.querySelector('.qbox');let f=3.4;t.style.fontSize='';
-    const u=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--u'))||0;
-    for(let k=0;k<14&&box.scrollHeight>box.clientHeight+1;k++){f-=.2;t.style.fontSize='calc('+f.toFixed(2)+'*var(--u))';}};
-  const show=()=>{const d=new Date(),start=new Date(d.getFullYear(),0,0),doy=Math.floor((d-start)/864e5);
-    const xm=d.getMonth()===11&&d.getDate()<=26&&doy%2===0;const L=xm?XMAS:QUOTES;const [t,a]=L[(doy*7+d.getFullYear())%L.length];
-    $('qtext').textContent=t;$('qauth').textContent=a;$('qauth').hidden=!a;requestAnimationFrame(fit);};
-  show();setInterval(show,30*60000);addEventListener('resize',()=>setTimeout(fit,150));
-  new ResizeObserver(()=>fit()).observe(document.querySelector('.qbox'));})();
+  const box=$('qbox'),t=$('qtext'),au=$('qauth');let cur=-1,fi=0,list=QUOTES;
+  const fits=()=>box.scrollHeight<=box.clientHeight+1&&box.scrollWidth<=box.clientWidth+1;
+  const fit=()=>{if(!box.clientHeight)return;const u=parseFloat(getComputedStyle(document.querySelector('.quote h2')).fontSize)/2.2||8;let lo=8,hi=Math.min(8.5*u,box.clientHeight*.62);
+    for(let k=0;k<16;k++){const m=(lo+hi)/2;t.style.fontSize=m+'px';if(fits())lo=m;else hi=m;}t.style.fontSize=lo+'px';};
+  const render=(i,f)=>{const [txt,a]=list[i];const [fam,st]=FONTS[f];
+    t.style.font=st+' 20px "'+fam+'",Georgia,serif';t.textContent=txt;au.textContent=a||'';au.hidden=!a;
+    const go=()=>requestAnimationFrame(fit);(document.fonts&&document.fonts.load?document.fonts.load(st+' 20px "'+fam+'"').then(go,go):go());};
+  const daily=()=>{const d=new Date(),doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);
+    list=(d.getMonth()===11&&d.getDate()<=26&&doy%3===0)?XMAS:QUOTES;cur=(doy*7)%list.length;fi=doy%FONTS.length;render(cur,fi);};
+  let day=new Date().getDate();daily();
+  setInterval(()=>{const d=new Date().getDate();if(d!==day){day=d;daily();}},60000);
+  $('qdial').addEventListener('click',()=>{const b=$('qdial');b.classList.remove('spin');void b.offsetWidth;b.classList.add('spin');
+    box.classList.add('out');list=QUOTES;let n;do{n=Math.floor(Math.random()*list.length);}while(n===cur&&list.length>1);cur=n;
+    let g;do{g=Math.floor(Math.random()*FONTS.length);}while(g===fi);fi=g;
+    setTimeout(()=>{render(cur,fi);setTimeout(()=>box.classList.remove('out'),60);},380);});
+  addEventListener('resize',()=>setTimeout(fit,150));new ResizeObserver(()=>fit()).observe(box);})();
 
 // Spotify: Wiedergabe auf ein anderes Gerät übertragen
 (()=>{const M=document.getElementById('devmodal'),L=document.getElementById('devlist');
