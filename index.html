@@ -367,6 +367,23 @@ html.dark .wifidlg #wifiqr{background:#fff}
 .frost svg{width:calc(4.2*var(--u));height:calc(4.2*var(--u));animation:spin 14s linear infinite}
 html.dark .frost{color:#a9c3e0}
 @media(prefers-reduced-motion:reduce){.xfx{display:none}}
+
+/* Spotify-Geräteauswahl */
+.spdevb{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:calc(.8*var(--u));padding:calc(.6*var(--u)) calc(1.2*var(--u));border-radius:calc(2*var(--u));background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.6);color:var(--mute);font:600 calc(2*var(--u)) "Red Hat Text";max-width:60%}
+.spdevb svg{width:calc(2.4*var(--u));height:calc(2.4*var(--u));flex:none;color:var(--sp)}
+.spdevb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spdevb span:empty::before{content:"Gerät wählen"}
+.spdevb:active{background:rgba(255,255,255,.7)}
+html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+.devdlg{width:calc(84*var(--u))}
+.devlist{list-style:none;margin:0;padding:0;display:grid;gap:calc(1.2*var(--u));max-height:calc(52*var(--u));overflow:auto}
+.devlist button{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:calc(2.4*var(--u));padding:calc(2*var(--u)) calc(2.4*var(--u));border-radius:calc(1.6*var(--u));background:var(--field);cursor:pointer;font:600 calc(3*var(--u)) "Red Hat Display";color:var(--ink)}
+.devlist button svg{width:calc(4.4*var(--u));height:calc(4.4*var(--u));flex:none;color:var(--mute)}
+.devlist button small{display:block;font:500 calc(2.1*var(--u)) "Red Hat Text";color:var(--mute);margin-top:calc(.3*var(--u))}
+.devlist button.on{background:rgba(29,185,84,.14);box-shadow:inset 0 0 0 2px var(--sp)}
+.devlist button.on svg,.devlist button.on small{color:var(--sp)}
+.devlist button:active{filter:brightness(.95)}
+.devmsg{font:500 calc(2.6*var(--u)) "Red Hat Text";color:var(--mute);padding:calc(2*var(--u)) 0}
 </style>
 </head>
 <body>
@@ -406,7 +423,7 @@ html.dark .frost{color:#a9c3e0}
 
   <div class="two">
     <section class="card sp">
-      <h2 style="margin:0"><span id="sphead" style="cursor:pointer">Spotify</span> <span id="spdev"></span><button class="sptr" id="sptr" hidden>Trennen</button></h2>
+      <h2 style="margin:0"><span id="sphead" style="cursor:pointer">Spotify</span> <button class="spdevb" id="spdevb" aria-label="Wiedergabegerät wählen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><circle cx="12" cy="6" r="1"/></svg><span id="spdev"></span></button><button class="sptr" id="sptr" hidden>Trennen</button></h2>
       <div class="row">
         <div class="cover" id="spcov" aria-hidden="true"></div>
         <div>
@@ -463,6 +480,14 @@ html.dark .frost{color:#a9c3e0}
       <div class="acts"><button type="button" class="del" id="camdel">Entfernen</button><button type="button" id="camx">Abbrechen</button><button class="save">Speichern</button></div>
     </form>
   </div>
+  <div class="modal" id="devmodal">
+    <div class="dlg devdlg">
+      <h3>Wiedergabe auf Gerät</h3>
+      <ul class="devlist" id="devlist"><li class="devmsg">Geräte werden gesucht …</li></ul>
+      <div class="ok" style="color:var(--mute)">Es erscheinen alle Geräte, auf denen Spotify gerade erreichbar ist (offene Spotify-App, Lautsprecher, Fernseher).</div>
+      <div class="acts"><button type="button" class="del" id="devre" style="color:var(--t)">Aktualisieren</button><button type="button" class="save" id="devx">Schließen</button></div>
+    </div>
+  </div>
   <div class="modal" id="wifimodal">
     <div class="dlg wifidlg">
       <div id="wifiview">
@@ -516,7 +541,7 @@ html.dark .frost{color:#a9c3e0}
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='66';
+const BUILD='67';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -661,8 +686,8 @@ async function spToken(body){const r=await fetch('https://accounts.spotify.com/a
   const j=await r.json();if(!r.ok)throw new Error(j.error||'token');spTok=j.access_token;spExp=Date.now()+(j.expires_in-60)*1000;if(j.refresh_token)ls.set('sprt',j.refresh_token);}
 async function spAuth(){if(spTok&&Date.now()<spExp)return spTok;const rt=ls.get('sprt');if(!rt)return null;
   try{await spToken({grant_type:'refresh_token',refresh_token:rt});return spTok;}catch(e){if(String(e.message).includes('invalid_grant'))ls.set('sprt',null);return null;}}
-async function spApi(path,method='GET'){const t=await spAuth();if(!t)throw new Error('login');
-  const r=await fetch('https://api.spotify.com/v1'+path,{method,headers:{Authorization:'Bearer '+t}});if(r.status===204)return null;
+async function spApi(path,method='GET',body){const t=await spAuth();if(!t)throw new Error('login');
+  const r=await fetch('https://api.spotify.com/v1'+path,body?{method,headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify(body)}:{method,headers:{Authorization:'Bearer '+t}});if(r.status===204)return null;
   if(r.status===401){spTok=null;throw new Error('auth');}return r.headers.get('content-type')?.includes('json')?r.json():null;}
 const spShow=()=>{const el=sp.on?Math.min(sp.dur,sp.pos+Date.now()-sp.t):sp.pos;$('pos').textContent=mmss(el);$('dur').textContent=mmss(sp.dur);
   $('prog').style.width=(sp.dur?el/sp.dur*100:0)+'%';};
@@ -684,9 +709,9 @@ $('play').addEventListener('click',()=>{sp.on?spCmd('/me/player/pause','PUT'):sp
 $('spnext').addEventListener('click',()=>spCmd('/me/player/next','POST'));
 $('spprev').addEventListener('click',()=>spCmd('/me/player/previous','POST'));
 $('spcon').addEventListener('click',spLogin);
-let trT;$('sphead').addEventListener('click',()=>{if(!ls.get('sprt'))return;$('sptr').hidden=false;$('spdev').hidden=true;clearTimeout(trT);
-  trT=setTimeout(()=>{$('sptr').hidden=true;$('spdev').hidden=false;},5000);});
-$('sptr').addEventListener('click',()=>{ls.set('sprt',null);spTok=null;$('sptr').hidden=true;$('spdev').hidden=false;spPoll();});
+let trT;$('sphead').addEventListener('click',()=>{if(!ls.get('sprt'))return;$('sptr').hidden=false;$('spdevb').hidden=true;clearTimeout(trT);
+  trT=setTimeout(()=>{$('sptr').hidden=true;$('spdevb').hidden=false;},5000);});
+$('sptr').addEventListener('click',()=>{ls.set('sprt',null);spTok=null;$('sptr').hidden=true;$('spdevb').hidden=false;spPoll();});
 setInterval(()=>{if(sp.on)spShow();},1000);
 (async()=>{const q=new URLSearchParams(location.search),code=q.get('code');
   if(code&&ls.get('spver')){try{await spToken({grant_type:'authorization_code',code,redirect_uri:SP_RED,code_verifier:ls.get('spver')});}catch(e){}
@@ -885,6 +910,32 @@ pThumb();
   const star='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.5-5.2 4.4 1.6 6.6L12 16.3 6.2 19.8l1.6-6.6L2.6 8.8l6.8-.5z"/></svg>';
   if(days>0&&days<=40)$('advent').innerHTML=star+'noch '+days+(days===1?' Tag':' Tage')+' bis Weihnachten';
   else if(days===0)$('advent').innerHTML=star+'Frohe Weihnachten';})();
+// Spotify: Wiedergabe auf ein anderes Gerät übertragen
+(()=>{const M=document.getElementById('devmodal'),L=document.getElementById('devlist');
+  const ico=t=>{t=(t||'').toLowerCase();
+    if(t==='smartphone')return '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>';
+    if(t==='tablet')return '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M11 18h2"/>';
+    if(t==='computer')return '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>';
+    if(t==='tv'||t==='castvideo')return '<rect x="2" y="5" width="20" height="13" rx="1.5"/><path d="M8 21h8"/>';
+    if(t==='avr'||t==='stb'||t==='castaudio'||t==='speaker'||t==='audiodongle')return '<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><circle cx="12" cy="6" r="1"/>';
+    if(t==='automobile')return '<path d="M5 16l1.5-5a2 2 0 0 1 2-1.5h7a2 2 0 0 1 2 1.5L19 16M4 16h16v3H4zM7 19v2M17 19v2"/>';
+    return '<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>';};
+  const TYP={smartphone:'Handy',tablet:'Tablet',computer:'Computer',tv:'Fernseher',castvideo:'Fernseher',speaker:'Lautsprecher',castaudio:'Lautsprecher',avr:'Verstärker',stb:'Receiver',audiodongle:'Lautsprecher',automobile:'Auto',gameconsole:'Spielkonsole'};
+  const esc=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const load=async()=>{L.innerHTML='<li class="devmsg">Geräte werden gesucht …</li>';
+    try{const j=await spApi('/me/player/devices');const d=(j&&j.devices)||[];
+      if(!d.length){L.innerHTML='<li class="devmsg">Kein Gerät gefunden. Öffne Spotify auf dem Handy oder schalte den Lautsprecher ein und tippe auf „Aktualisieren“.</li>';return;}
+      L.innerHTML=d.map(x=>`<li><button type="button" data-id="${esc(x.id||'')}" class="${x.is_active?'on':''}" ${x.is_restricted||!x.id?'disabled':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico(x.type)}</svg><span>${esc(x.name)}<small>${x.is_active?'Spielt gerade':(TYP[(x.type||'').toLowerCase()]||x.type||'Gerät')}${x.volume_percent!=null?' · Lautstärke '+x.volume_percent+' %':''}</small></span></button></li>`).join('');}
+    catch(e){L.innerHTML='<li class="devmsg">'+(String(e.message)==='login'?'Spotify ist nicht verbunden.':'Geräte konnten nicht geladen werden.')+'</li>';}};
+  document.getElementById('spdevb').addEventListener('click',()=>{M.classList.add('on');load();});
+  document.getElementById('devre').addEventListener('click',load);
+  document.getElementById('devx').addEventListener('click',()=>M.classList.remove('on'));
+  M.addEventListener('click',e=>{if(e.target===M)M.classList.remove('on');});
+  L.addEventListener('click',async e=>{const b=e.target.closest('button[data-id]');if(!b||b.disabled)return;
+    b.querySelector('small').textContent='Wird übertragen …';
+    try{await spApi('/me/player','PUT',{device_ids:[b.dataset.id],play:true});}catch(err){}
+    setTimeout(()=>{M.classList.remove('on');spPoll();},900);});
+})();
 }
 
 // Weihnachts-Überraschung (20.11.–6.1., 7–23 Uhr, alle 20–45 Minuten zufällig; Antippen der Advent-Zeile startet sofort eine)
@@ -988,6 +1039,7 @@ const WALKER = `<svg viewBox="0 0 120 92">${DEER(WALKLEGS)}${NOSE(true)}</svg>`;
   sched((4+Math.random()*8)*60000);
   const adv=document.getElementById('advent');if(adv){adv.style.cursor='pointer';adv.addEventListener('click',()=>run(pick()));}
   window.xmasNow=run;})();
+
 </script>
 </body>
 </html>
