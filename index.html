@@ -384,6 +384,17 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
 .devlist button.on svg,.devlist button.on small{color:var(--sp)}
 .devlist button:active{filter:brightness(.95)}
 .devmsg{font:500 calc(2.6*var(--u)) "Red Hat Text";color:var(--mute);padding:calc(2*var(--u)) 0}
+
+/* Mittelspalte: Kamera oben im echten Bildformat, darunter Spruch des Tages */
+.mid{grid-area:cam;display:flex;flex-direction:column;gap:calc(2.2*var(--u));min-height:0;min-width:0}
+.mid .cam{flex:none;width:100%;aspect-ratio:16/9;min-height:0;max-height:78%}
+.quote{flex:1 1 0;min-height:calc(10*var(--u));display:flex;flex-direction:column}
+.quote h2{margin-bottom:calc(.8*var(--u))}
+.qbox{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;overflow:hidden;padding:0 calc(1.5*var(--u))}
+#qtext{margin:0;font:600 italic calc(3.4*var(--u))/1.3 "Red Hat Display";color:var(--ink);quotes:"„" "“"}
+#qtext::before{content:open-quote;color:var(--y)}#qtext::after{content:close-quote;color:var(--y)}
+#qauth{display:block;margin-top:calc(.8*var(--u));font:500 normal calc(2*var(--u)) "Red Hat Text";color:var(--mute);text-align:right}
+#qauth::before{content:"– "}
 </style>
 </head>
 <body>
@@ -413,6 +424,7 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
     </section>
   </div>
 
+  <div class="mid">
   <section class="card cam">
     <img id="camimg" alt="Kamerabild Haustür" referrerpolicy="no-referrer" hidden>
     <div class="cammsg" id="cammsg">Kamera wird geladen …</div>
@@ -420,6 +432,11 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
     <div class="live"><b id="camlive" hidden>LIVE</b><span class="tag">Haustür</span></div>
     <button class="gear" id="camgear" aria-label="Kamera einstellen"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
   </section>
+  <section class="card quote" id="quote">
+    <h2>Spruch des Tages</h2>
+    <div class="qbox"><blockquote id="qtext"></blockquote><cite id="qauth"></cite></div>
+  </section>
+  </div>
 
   <div class="two">
     <section class="card sp">
@@ -541,7 +558,7 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='70';
+const BUILD='71';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -778,7 +795,7 @@ function camTick(){clearTimeout(camT);if(camStop)return;if(!cam){camMsg('Kamera 
     else if(camErr<4&&$('camimg').hidden)camMsg('Verbinde ('+camProto+', Versuch '+camErr+') …');
     camT=setTimeout(camTick,camErr>=4?15000:1000);};
   const wd=setTimeout(()=>{im.src='';fail();},10000);
-  im.onload=()=>{if(done)return;done=true;clearTimeout(wd);$('camimg').src=im.src;$('camimg').hidden=false;$('camlive').hidden=false;camMsg('');camErr=0;$('camdbg').textContent='';
+  im.onload=()=>{if(done)return;done=true;clearTimeout(wd);if(im.naturalWidth&&im.naturalHeight){const ar=im.naturalWidth+'/'+im.naturalHeight;if(ls.get('flurcamar')!==ar){ls.set('flurcamar',ar);}document.querySelector('.cam').style.aspectRatio=ar;}$('camimg').src=im.src;$('camimg').hidden=false;$('camlive').hidden=false;camMsg('');camErr=0;$('camdbg').textContent='';
     camT=setTimeout(camTick,Math.max(150,1000/(+cam.fps||1)-(Date.now()-t0)));};
   im.onerror=fail;
   im.src=camUrl();}
@@ -910,6 +927,127 @@ pThumb();
   const star='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.5-5.2 4.4 1.6 6.6L12 16.3 6.2 19.8l1.6-6.6L2.6 8.8l6.8-.5z"/></svg>';
   if(days>0&&days<=40)$('advent').innerHTML=star+'noch '+days+(days===1?' Tag':' Tage')+' bis Weihnachten';
   else if(days===0)$('advent').innerHTML=star+'Frohe Weihnachten';})();
+// Spruch des Tages (im Dezember bis 26.12. abwechselnd mit Weihnachtssprüchen)
+(()=>{const QUOTES=[
+["Wer immer tut, was er schon kann, bleibt immer das, was er schon ist.","Sprichwort"],
+["Auch aus Steinen, die einem in den Weg gelegt werden, kann man Schönes bauen.","Sprichwort"],
+["Es ist nicht wenig Zeit, die wir haben, sondern viel Zeit, die wir nicht nutzen.","Seneca"],
+["Der Weg ist das Ziel.","Konfuzius"],
+["Wer kämpft, kann verlieren. Wer nicht kämpft, hat schon verloren.","Sprichwort"],
+["Phantasie ist wichtiger als Wissen, denn Wissen ist begrenzt.","Albert Einstein"],
+["Glück ist das Einzige, das sich verdoppelt, wenn man es teilt.","Albert Schweitzer"],
+["Man sieht nur mit dem Herzen gut. Das Wesentliche ist für die Augen unsichtbar.","Antoine de Saint-Exupéry"],
+["Lachen ist die beste Medizin.","Sprichwort"],
+["Morgenstund hat Gold im Mund.","Sprichwort"],
+["Wer zuletzt lacht, lacht am besten.","Sprichwort"],
+["Übung macht den Meister.","Sprichwort"],
+["In der Ruhe liegt die Kraft.","Sprichwort"],
+["Was du heute kannst besorgen, das verschiebe nicht auf morgen.","Sprichwort"],
+["Ein Lächeln ist die kürzeste Verbindung zwischen zwei Menschen.","Victor Borge"],
+["Die beste Zeit, einen Baum zu pflanzen, war vor zwanzig Jahren. Die nächstbeste ist jetzt.","Chinesisches Sprichwort"],
+["Wo ein Wille ist, ist auch ein Weg.","Sprichwort"],
+["Geteilte Freude ist doppelte Freude, geteiltes Leid ist halbes Leid.","Sprichwort"],
+["Es gibt kein schlechtes Wetter, nur falsche Kleidung.","Sprichwort"],
+["Jeder Tag ist ein neuer Anfang.","Sprichwort"],
+["Wer nicht wagt, der nicht gewinnt.","Sprichwort"],
+["Kleine Schritte sind besser als große Pläne, die nie beginnen.","Sprichwort"],
+["Das Leben ist zu kurz für schlechten Kaffee.","Sprichwort"],
+["Ordnung ist das halbe Leben – die andere Hälfte ist schöner.","Sprichwort"],
+["Wer A sagt, muss nicht B sagen. Er kann auch erkennen, dass A falsch war.","Bertolt Brecht"],
+["Die Zukunft hängt davon ab, was wir heute tun.","Mahatma Gandhi"],
+["Sei du selbst die Veränderung, die du dir wünschst für diese Welt.","Mahatma Gandhi"],
+["Nicht weil es schwer ist, wagen wir es nicht, sondern weil wir es nicht wagen, ist es schwer.","Seneca"],
+["Das Glück deines Lebens hängt von der Beschaffenheit deiner Gedanken ab.","Mark Aurel"],
+["Wenn du es eilig hast, gehe langsam.","Konfuzius"],
+["Wer das Ziel kennt, kann entscheiden.","Konfuzius"],
+["Der Mensch ist nur da ganz Mensch, wo er spielt.","Friedrich Schiller"],
+["Ohne Musik wäre das Leben ein Irrtum.","Friedrich Nietzsche"],
+["Was mich nicht umbringt, macht mich stärker.","Friedrich Nietzsche"],
+["Humor ist der Knopf, der verhindert, dass uns der Kragen platzt.","Joachim Ringelnatz"],
+["Sicher ist, dass nichts sicher ist. Selbst das nicht.","Joachim Ringelnatz"],
+["Es gibt nichts Gutes, außer man tut es.","Erich Kästner"],
+["Wer nur an sich denkt, lebt nicht wirklich.","Erich Kästner"],
+["Das Schönste, was wir erleben können, ist das Geheimnisvolle.","Albert Einstein"],
+["Wer sich selbst nicht zu lachen versteht, hat zu wenig Humor.","Sprichwort"],
+["Freundschaft ist eine Seele in zwei Körpern.","Aristoteles"],
+["Das Ganze ist mehr als die Summe seiner Teile.","Aristoteles"],
+["Wir sind, was wir wiederholt tun.","Aristoteles"],
+["Ich weiß, dass ich nichts weiß.","Sokrates"],
+["Alles fließt.","Heraklit"],
+["Nichts ist so beständig wie der Wandel.","Heraklit"],
+["Der Anfang ist die Hälfte des Ganzen.","Aristoteles"],
+["Wer langsam geht, kommt auch ans Ziel.","Sprichwort"],
+["Lieber ein Ende mit Schrecken als ein Schrecken ohne Ende.","Sprichwort"],
+["Hunde, die bellen, beißen nicht.","Sprichwort"],
+["Gut Ding will Weile haben.","Sprichwort"],
+["Ende gut, alles gut.","Sprichwort"],
+["Aller Anfang ist schwer.","Sprichwort"],
+["Wer rastet, der rostet.","Sprichwort"],
+["Eile mit Weile.","Sprichwort"],
+["Ohne Fleiß kein Preis.","Sprichwort"],
+["Steter Tropfen höhlt den Stein.","Sprichwort"],
+["Viele Köche verderben den Brei.","Sprichwort"],
+["Der frühe Vogel fängt den Wurm – aber die zweite Maus bekommt den Käse.","Sprichwort"],
+["Das Leben ist wie Fahrradfahren. Um die Balance zu halten, musst du in Bewegung bleiben.","Albert Einstein"],
+["Die Kunst ist, einmal mehr aufzustehen, als man umgeworfen wird.","Sprichwort"],
+["Ein Pessimist sieht in jeder Chance eine Schwierigkeit, ein Optimist in jeder Schwierigkeit eine Chance.","Winston Churchill"],
+["Tu erst das Notwendige, dann das Mögliche, und plötzlich schaffst du das Unmögliche.","Sprichwort"],
+["Wer glücklich ist, kann glücklich machen.","Sprichwort"],
+["Gib jedem Tag die Chance, der schönste deines Lebens zu werden.","Sprichwort"],
+["Zum Glück gibt es Kaffee.","Familie Böle"],
+["Wer anderen eine Grube gräbt, fällt selbst hinein.","Sprichwort"],
+["Kommt Zeit, kommt Rat.","Sprichwort"],
+["Not macht erfinderisch.","Sprichwort"],
+["Reden ist Silber, Schweigen ist Gold.","Sprichwort"],
+["Der Apfel fällt nicht weit vom Stamm.","Sprichwort"],
+["Lügen haben kurze Beine.","Sprichwort"],
+["Wer suchet, der findet.","Sprichwort"],
+["Hoffnung ist nicht die Überzeugung, dass etwas gut ausgeht, sondern die Gewissheit, dass etwas Sinn hat.","Václav Havel"],
+["Man muss das Unmögliche versuchen, um das Mögliche zu erreichen.","Hermann Hesse"],
+["Und jedem Anfang wohnt ein Zauber inne.","Hermann Hesse"],
+["Glück ist Liebe, nichts anderes.","Hermann Hesse"],
+["Edel sei der Mensch, hilfreich und gut.","Johann Wolfgang von Goethe"],
+["Es ist nicht genug zu wissen, man muss auch anwenden.","Johann Wolfgang von Goethe"],
+["Willst du immer weiter schweifen? Sieh, das Gute liegt so nah.","Johann Wolfgang von Goethe"],
+["Wer fertig ist, dem ist nichts recht zu machen; ein Werdender wird immer dankbar sein.","Johann Wolfgang von Goethe"],
+["Die Axt im Haus erspart den Zimmermann.","Friedrich Schiller"],
+["Drum prüfe, wer sich ewig bindet.","Friedrich Schiller"],
+["Gefährlich ist's, den Leu zu wecken.","Friedrich Schiller"],
+["Der kluge Mann baut vor.","Friedrich Schiller"],
+["Das Leben ist schön – von einfach war nie die Rede.","Sprichwort"],
+["Heute ist ein guter Tag für einen guten Tag.","Sprichwort"],
+["Kaffee zuerst, Entscheidungen später.","Sprichwort"],
+["Schuhe aus, Herz auf.","Familie Böle"],
+["Zu Hause ist da, wo der Hund schon an der Tür wartet.","Familie Böle"],
+["Gute Laune ist ansteckend – also los!","Familie Böle"],
+["Nicht vergessen: Schlüssel, Handy, gute Laune.","Familie Böle"],
+["Wer rausgeht, kommt auch wieder rein. Meistens jedenfalls.","Familie Böle"]
+];
+const XMAS=[
+["Weihnachten ist nicht ein Datum, sondern ein Gefühl.","Sprichwort"],
+["Advent heißt Warten – auf das Licht.","Sprichwort"],
+["Lasst uns froh und munter sein.","Volkslied"],
+["Alle Jahre wieder.","Volkslied"],
+["Morgen, Kinder, wird's was geben.","Volkslied"],
+["Die schönsten Geschenke liegen nicht unterm Baum, sondern sitzen drumherum.","Sprichwort"],
+["Kekse zählen in der Adventszeit nicht.","Familie Böle"],
+["Ein bisschen Glitzer schadet nie.","Sprichwort"],
+["Advent, Advent, ein Lichtlein brennt.","Volksgut"],
+["Wer Weihnachten nicht im Herzen trägt, findet es auch nicht unter dem Baum.","Sprichwort"],
+["Zeit ist das schönste Geschenk.","Sprichwort"],
+["Dezember: Plätzchen backen ist offiziell Sport.","Familie Böle"]
+];
+
+  const ar=ls.get('flurcamar');if(ar)document.querySelector('.cam').style.aspectRatio=ar;
+  const fit=()=>{const t=$('qtext'),box=document.querySelector('.qbox');let f=3.4;t.style.fontSize='';
+    const u=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--u'))||0;
+    for(let k=0;k<14&&box.scrollHeight>box.clientHeight+1;k++){f-=.2;t.style.fontSize='calc('+f.toFixed(2)+'*var(--u))';}};
+  const show=()=>{const d=new Date(),start=new Date(d.getFullYear(),0,0),doy=Math.floor((d-start)/864e5);
+    const xm=d.getMonth()===11&&d.getDate()<=26&&doy%2===0;const L=xm?XMAS:QUOTES;const [t,a]=L[(doy*7+d.getFullYear())%L.length];
+    $('qtext').textContent=t;$('qauth').textContent=a;$('qauth').hidden=!a;requestAnimationFrame(fit);};
+  show();setInterval(show,30*60000);addEventListener('resize',()=>setTimeout(fit,150));
+  new ResizeObserver(()=>fit()).observe(document.querySelector('.qbox'));})();
+
 // Spotify: Wiedergabe auf ein anderes Gerät übertragen
 (()=>{const M=document.getElementById('devmodal'),L=document.getElementById('devlist');
   const ico=t=>{t=(t||'').toLowerCase();
