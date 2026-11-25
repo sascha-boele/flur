@@ -232,8 +232,8 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 .live b{background:var(--r)}
 .cal li.shopli time{color:var(--y)}
 .cal li .cnt{display:block;font:600 calc(2*var(--u)) "Red Hat Text";color:var(--mute);white-space:nowrap;margin-top:calc(.2*var(--u))}
-#shopopen,#paintopen:not(.hasimg){justify-content:center}
-#shopopen svg,#paintopen:not(.hasimg) svg{width:calc(9*var(--u));height:calc(9*var(--u))}
+#paintopen:not(.hasimg){justify-content:center}
+#paintopen:not(.hasimg) svg{width:calc(9*var(--u));height:calc(9*var(--u))}
 #ptext:empty{display:none}
 /* Querformat: drei Spalten, gleiche Elementgröße wie hochkant */
 @media all{ /* nur noch Querformat */
@@ -404,6 +404,27 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
 .qdial.spin .qrot{animation:qspin .9s cubic-bezier(.2,.7,.2,1)}
 .qdial:active{transform:scale(.94)}
 @keyframes qspin{from{transform:rotate(0)}to{transform:rotate(-540deg)}}
+
+/* Einkaufszettel: 5 Gerichtvorschläge mit Drehrad */
+.notes{grid-template-rows:auto minmax(0,1fr) auto!important}
+.notes h2{align-items:center}
+.penb{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:calc(.7*var(--u));padding:calc(.6*var(--u)) calc(1.3*var(--u));border-radius:calc(2*var(--u));background:var(--t);color:#fff;font:700 calc(1.9*var(--u)) "Red Hat Display"}
+.penb svg{width:calc(2.3*var(--u));height:calc(2.3*var(--u))}
+.penb:active{filter:brightness(1.15)}
+.dishwrap{min-height:0;display:flex;align-items:center;gap:calc(1.2*var(--u))}
+.dishes{flex:1;min-width:0;height:100%;list-style:none;margin:0;padding:0;display:grid;grid-template-rows:repeat(5,minmax(0,1fr));gap:calc(.5*var(--u));transition:opacity .3s,transform .3s}
+.dishes.out{opacity:0;transform:translateX(calc(1*var(--u)))}
+.dishes button{all:unset;box-sizing:border-box;width:100%;height:100%;display:flex;align-items:center;gap:calc(.9*var(--u));padding:0 calc(1*var(--u));border-radius:calc(1*var(--u));background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.7);cursor:pointer;font:600 calc(1.9*var(--u)) "Red Hat Text";color:var(--ink);overflow:hidden}
+.dishes button i{font-style:normal;font-size:calc(2.2*var(--u));flex:none}
+.dishes button span{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.08}
+.dishes button:active{background:rgba(255,255,255,.85)}
+html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
+.ddial{width:calc(7*var(--u))!important;height:calc(7*var(--u))!important}
+.dishdlg{width:calc(90*var(--u))}
+.dishdlg h3{font-size:calc(4*var(--u))}
+.dchips{display:flex;flex-wrap:wrap;gap:calc(1.2*var(--u))}
+.dchips button{all:unset;cursor:pointer;padding:calc(1.4*var(--u)) calc(2.4*var(--u));border-radius:calc(3*var(--u));background:var(--t);color:#fff;font:600 calc(2.8*var(--u)) "Red Hat Text";transition:background .2s,color .2s}
+.dchips button.off{background:var(--field);color:var(--mute);text-decoration:line-through}
 </style>
 </head>
 <body>
@@ -478,8 +499,11 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
 
   <div class="two">
     <section class="card notes">
-      <h2>Einkaufszettel <span>im Familienkalender</span></h2>
-      <button class="shopbtn" id="shopopen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+      <h2>Einkaufszettel <button class="penb" id="shopopen" aria-label="Einkaufszettel schreiben"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><b>Schreiben</b></button></h2>
+      <div class="dishwrap"><ul class="dishes" id="dishes"></ul><button class="qdial ddial" id="ddial" aria-label="Neue Gerichte"><svg viewBox="0 0 100 100"><defs><radialGradient id="ddg" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#efe6d6"/><stop offset="1" stop-color="#cbb894"/></radialGradient></defs>
+      <g class="qrot"><circle cx="50" cy="50" r="46" fill="#b8892d"/><g fill="#d6a74a"><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(0 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(20 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(40 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(60 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(80 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(100 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(120 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(140 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(160 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(180 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(200 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(220 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(240 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(260 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(280 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(300 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(320 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(340 50 50)"/></g>
+      <circle cx="50" cy="50" r="38" fill="url(#ddg)" stroke="#fff" stroke-width="1.5"/><circle cx="50" cy="20" r="4" fill="#2f5d50"/>
+      <path d="M36 52a14 14 0 1 0 4-10" fill="none" stroke="#2f5d50" stroke-width="5" stroke-linecap="round"/><path d="M33 36l7 6.5-9 2.5z" fill="#2f5d50"/></g></svg></button></div>
       <div class="ok" id="okcard" aria-live="polite"></div>
     </section>
     <section class="card paint">
@@ -516,6 +540,15 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
       <ul class="devlist" id="devlist"><li class="devmsg">Geräte werden gesucht …</li></ul>
       <div class="ok" style="color:var(--mute)">Es erscheinen alle Geräte, auf denen Spotify gerade erreichbar ist (offene Spotify-App, Lautsprecher, Fernseher).</div>
       <div class="acts"><button type="button" class="del" id="devre" style="color:var(--t)">Aktualisieren</button><button type="button" class="save" id="devx">Schließen</button></div>
+    </div>
+  </div>
+  <div class="modal" id="dishmodal">
+    <div class="dlg dishdlg">
+      <h3 id="dishtitle"></h3>
+      <div class="ok" style="color:var(--mute)">Was schon da ist, einfach antippen – das wird dann nicht übernommen.</div>
+      <div class="dchips" id="dchips"></div>
+      <div class="ok" id="dishok" aria-live="polite"></div>
+      <div class="acts"><button type="button" id="dishx">Abbrechen</button><button type="button" class="save" id="dishadd">Auf den Einkaufszettel</button></div>
     </div>
   </div>
   <div class="modal" id="wifimodal">
@@ -571,7 +604,7 @@ html.dark .spdevb{background:rgba(255,255,255,.06);border-color:rgba(255,255,255
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='72';
+const BUILD='73';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -1027,6 +1060,72 @@ const XMAS=[
     let g;do{g=Math.floor(Math.random()*FONTS.length);}while(g===fi);fi=g;
     setTimeout(()=>{render(cur,fi);setTimeout(()=>box.classList.remove('out'),60);},380);});
   addEventListener('resize',()=>setTimeout(fit,150));new ResizeObserver(()=>fit()).observe(box);})();
+
+// Einkaufszettel: 5 Gerichte zur Auswahl, Drehrad mischt neu, Zutaten wandern auf den Einkaufszettel
+(()=>{const DISHES=[
+["🍝","Spaghetti Bolognese",["Spaghetti","Hackfleisch","Passierte Tomaten","Zwiebeln","Knoblauch","Karotten","Parmesan"]],
+["🥡","Chinanudeln mit Gemüse",["Mie-Nudeln","Paprika","Möhren","Lauchzwiebeln","Sojasoße","Sojasprossen","Hähnchenbrust"]],
+["🌶️","Chili con Carne",["Hackfleisch","Kidneybohnen","Mais","Gehackte Tomaten","Zwiebeln","Paprika","Reis"]],
+["🧀","Lasagne",["Lasagneplatten","Hackfleisch","Passierte Tomaten","Milch","Butter","Mehl","Geriebener Käse"]],
+["🥩","Schnitzel mit Pommes",["Schweineschnitzel","Paniermehl","Eier","Mehl","Pommes","Zitrone","Salat"]],
+["🍛","Hähnchen-Curry",["Hähnchenbrust","Kokosmilch","Currypaste","Paprika","Zwiebeln","Reis"]],
+["🍕","Pizza selbst gemacht",["Pizzateig","Passierte Tomaten","Mozzarella","Salami","Champignons","Paprika"]],
+["🥔","Kartoffelsuppe",["Kartoffeln","Suppengrün","Zwiebeln","Gemüsebrühe","Sahne","Würstchen"]],
+["🍲","Gulasch mit Nudeln",["Gulaschfleisch","Zwiebeln","Paprika","Tomatenmark","Paprikapulver","Bandnudeln"]],
+["🍖","Frikadellen mit Kartoffelpüree",["Hackfleisch","Brötchen","Eier","Zwiebeln","Kartoffeln","Milch","Butter","Erbsen & Möhren"]],
+["🐟","Fischstäbchen mit Kartoffeln",["Fischstäbchen","Kartoffeln","Spinat","Remoulade"]],
+["🥞","Pfannkuchen",["Mehl","Eier","Milch","Zucker","Apfelmus","Nutella"]],
+["🧀","Käsespätzle",["Spätzle","Bergkäse","Zwiebeln","Butter","Schnittlauch"]],
+["🌮","Tacos",["Taco-Shells","Hackfleisch","Taco-Gewürz","Salat","Tomaten","Geriebener Käse","Saure Sahne"]],
+["🍔","Burger",["Burger-Brötchen","Rinderhack","Cheddar","Tomaten","Salat","Gewürzgurken","Zwiebeln"]],
+["🥦","Gemüsepfanne mit Reis",["Reis","Brokkoli","Paprika","Zucchini","Möhren","Sojasoße"]],
+["🥣","Linseneintopf",["Linsen","Kartoffeln","Suppengrün","Mettwürstchen","Essig"]],
+["🫛","Erbsensuppe",["Erbsen getrocknet","Kartoffeln","Suppengrün","Kasseler","Würstchen"]],
+["🥬","Grünkohl mit Pinkel",["Grünkohl","Pinkel","Kasseler","Kartoffeln","Zwiebeln","Senf"]],
+["🍽️","Rinderrouladen",["Rinderrouladen","Speck","Gewürzgurken","Senf","Zwiebeln","Rotkohl","Kartoffeln"]],
+["🌭","Currywurst mit Pommes",["Bratwurst","Currysoße","Currypulver","Pommes"]],
+["🍝","Nudelauflauf",["Nudeln","Schinken","Sahne","Eier","Geriebener Käse","Erbsen"]],
+["🥔","Kartoffelgratin",["Kartoffeln","Sahne","Knoblauch","Geriebener Käse","Muskat"]],
+["🌯","Wraps",["Tortilla-Wraps","Hähnchenbrust","Salat","Tomaten","Gurke","Joghurt-Dressing"]],
+["🍝","Spaghetti Carbonara",["Spaghetti","Speck","Eier","Parmesan","Pfeffer"]],
+["🌶️","Penne all'arrabbiata",["Penne","Gehackte Tomaten","Knoblauch","Chili","Parmesan"]],
+["🥙","Gyros mit Tzatziki",["Gyrosfleisch","Joghurt","Gurke","Knoblauch","Fladenbrot","Zwiebeln","Tomaten"]],
+["🍚","Milchreis",["Milchreis","Milch","Zucker","Zimt","Kirschen"]],
+["🥔","Reibekuchen mit Apfelmus",["Kartoffeln","Zwiebeln","Eier","Mehl","Apfelmus"]],
+["🍳","Bratkartoffeln mit Spiegelei",["Kartoffeln","Speck","Zwiebeln","Eier","Gewürzgurken"]],
+["🍗","Hähnchenschenkel mit Reis",["Hähnchenschenkel","Reis","Paprika","Paprikapulver","Erbsen"]],
+["🐠","Lachs mit Ofengemüse",["Lachsfilet","Zucchini","Paprika","Kartoffeln","Zitrone","Dill"]],
+["🫑","Ofengemüse mit Feta",["Feta","Paprika","Zucchini","Kartoffeln","Rote Zwiebeln","Olivenöl"]],
+["🥟","Tortellini in Sahnesoße",["Tortellini","Sahne","Schinken","Erbsen","Parmesan"]],
+["🥚","Senfeier mit Kartoffeln",["Eier","Kartoffeln","Senf","Sahne","Mehl","Butter"]],
+["🍖","Königsberger Klopse",["Hackfleisch","Kapern","Zitrone","Sahne","Kartoffeln","Rote Bete"]],
+["🧅","Flammkuchen",["Flammkuchenteig","Schmand","Speck","Zwiebeln"]],
+["🥗","Couscous-Salat",["Couscous","Gurke","Tomaten","Paprika","Petersilie","Feta","Zitrone"]],
+["🍅","Tomatensuppe mit Toast",["Passierte Tomaten","Zwiebeln","Sahne","Basilikum","Toastbrot","Käse"]],
+["🫕","Hühnersuppe",["Suppenhuhn","Suppengrün","Suppennudeln","Petersilie"]]
+];
+
+  const ul=$('dishes'),M=$('dishmodal');let shown=[],cur=null;
+  const esc=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const pick=()=>{const idx=[...DISHES.keys()].filter(i=>!shown.includes(i));const out=[];
+    while(out.length<5&&idx.length){out.push(idx.splice(Math.floor(Math.random()*idx.length),1)[0]);}shown=out;
+    ul.innerHTML=out.map(i=>`<li><button type="button" data-i="${i}"><i>${DISHES[i][0]}</i><span>${esc(DISHES[i][1].split(' mit ')[0].split(' in Sahne')[0].replace(' selbst gemacht',''))}</span></button></li>`).join('');};
+  pick();
+  $('ddial').addEventListener('click',()=>{const b=$('ddial');b.classList.remove('spin');void b.offsetWidth;b.classList.add('spin');
+    ul.classList.add('out');setTimeout(()=>{pick();ul.classList.remove('out');},330);});
+  ul.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(!b)return;cur=DISHES[+b.dataset.i];
+    $('dishtitle').textContent=cur[0]+' '+cur[1];$('dishok').textContent='';$('dishadd').disabled=false;
+    $('dchips').innerHTML=cur[2].map(z=>`<button type="button">${esc(z)}</button>`).join('');M.classList.add('on');});
+  $('dchips').addEventListener('click',e=>{const b=e.target.closest('button');if(b)b.classList.toggle('off');});
+  const close=()=>M.classList.remove('on');
+  $('dishx').addEventListener('click',close);M.addEventListener('click',e=>{if(e.target===M)close();});
+  $('dishadd').addEventListener('click',()=>{const z=[...$('dchips').querySelectorAll('button:not(.off)')].map(b=>b.textContent);
+    if(!z.length){$('dishok').textContent='Alles schon da – dann guten Appetit!';return;}
+    $('dishadd').disabled=true;$('dishok').textContent='Wird eingetragen …';
+    api({action:'shop_add',items:z.join('\n')}).then(()=>{$('dishok').textContent='✓ '+z.length+' Zutaten stehen auf dem Einkaufszettel';
+      $('okcard').textContent='✓ Zutaten für '+cur[1]+' eingetragen';setTimeout(()=>{$('okcard').textContent='';},10000);loadCal();setTimeout(close,1200);})
+      .catch(()=>{$('dishok').textContent='Hat nicht geklappt – bitte nochmal tippen';$('dishadd').disabled=false;});});
+})();
 
 // Spotify: Wiedergabe auf ein anderes Gerät übertragen
 (()=>{const M=document.getElementById('devmodal'),L=document.getElementById('devlist');
