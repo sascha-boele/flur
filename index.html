@@ -6,7 +6,7 @@
 <title>Flur-Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Amatic+SC:wght@700&family=Caveat:wght@600&family=Cormorant+Garamond:ital,wght@1,600&family=Dancing+Script:wght@600&family=Josefin+Sans:wght@300&family=Lora:ital,wght@1,500&family=Merriweather:ital,wght@1,400&family=Playfair+Display:ital,wght@1,600&family=Satisfy&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alfa+Slab+One&family=Bebas+Neue&family=Caveat:wght@700&family=Dancing+Script:wght@700&family=Josefin+Sans:wght@700&family=Lora:ital,wght@1,700&family=Merriweather:ital,wght@1,900&family=Pacifico&family=Playfair+Display:ital,wght@1,800&display=swap">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;800&family=Red+Hat+Text:wght@400;500;600&display=swap" rel="stylesheet">
@@ -425,6 +425,37 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
 .dchips{display:flex;flex-wrap:wrap;gap:calc(1.2*var(--u))}
 .dchips button{all:unset;cursor:pointer;padding:calc(1.4*var(--u)) calc(2.4*var(--u));border-radius:calc(3*var(--u));background:var(--t);color:#fff;font:600 calc(2.8*var(--u)) "Red Hat Text";transition:background .2s,color .2s}
 .dchips button.off{background:var(--field);color:var(--mute);text-decoration:line-through}
+
+/* === Neues Layout (26.11.): Kamera groß oben rechts, unten Notizen+Einkauf | Kalender | Spruch === */
+.screen{grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr) minmax(0,1.5fr)!important;grid-template-rows:auto minmax(0,1fr) var(--brow,calc(27*var(--u)))!important;
+  grid-template-areas:"top cam cam" "radar cam cam" "np cal quote"!important}
+.mid{display:contents!important}
+.mid .cam,.cam{grid-area:cam!important;aspect-ratio:auto!important;max-height:none!important;min-height:0!important;width:auto!important}
+.quote{grid-area:quote!important;min-height:0!important}
+.cal{grid-area:cal!important}
+.sp{display:none!important}
+.np{display:grid!important;grid-area:np;grid-template-columns:minmax(0,.62fr) minmax(0,1.38fr);gap:calc(2.2*var(--u));min-height:0}
+.np .paint{order:-1}
+.np .card{min-height:0;grid-area:auto!important}
+.radar{grid-template-rows:minmax(0,1fr) auto auto calc(10.5*var(--u))!important}
+.rainbox{padding:calc(.2*var(--u)) calc(1.6*var(--u)) calc(.6*var(--u))!important}
+.rainbox .hc{grid-template-rows:auto minmax(0,1fr) auto!important;gap:calc(.2*var(--u))!important;height:100%!important}
+.rainhd{font-size:calc(1.6*var(--u))!important}
+.hc{font-size:calc(1.5*var(--u))!important}
+.notes .penb b{display:none}
+.notes .penb{padding:calc(.6*var(--u))}
+.ddial{width:calc(4.6*var(--u))!important;height:calc(4.6*var(--u))!important}
+.notes h2 .nbtns{display:inline-flex!important;align-items:center;gap:calc(1*var(--u))}
+.notes .dishes button span{display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.np .paint .shopbtn{min-width:0;width:100%;padding:calc(1*var(--u))}
+.np .paint .shopbtn svg{width:calc(6*var(--u))!important;height:calc(6*var(--u))!important}
+.np .card{padding:calc(2*var(--u))}
+.dishes button{font-size:calc(1.7*var(--u))}
+.dishes button i{font-size:calc(1.9*var(--u))}
+/* Spruch groß und fett, gut aus der Ferne lesbar */
+#qtext{line-height:1.08;color:var(--ink)}
+#qauth{font:700 normal calc(2.6*var(--u)) "Red Hat Display"!important;margin-top:calc(.8*var(--u))}
+.quote .qdial{width:calc(8*var(--u));height:calc(8*var(--u))}
 </style>
 </head>
 <body>
@@ -497,13 +528,13 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
     </section>
   </div>
 
-  <div class="two">
+  <div class="two np">
     <section class="card notes">
-      <h2>Einkaufszettel <button class="penb" id="shopopen" aria-label="Einkaufszettel schreiben"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><b>Schreiben</b></button></h2>
-      <div class="dishwrap"><ul class="dishes" id="dishes"></ul><button class="qdial ddial" id="ddial" aria-label="Neue Gerichte"><svg viewBox="0 0 100 100"><defs><radialGradient id="ddg" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#efe6d6"/><stop offset="1" stop-color="#cbb894"/></radialGradient></defs>
+      <h2>Einkaufszettel <span class="nbtns"><button class="qdial ddial" id="ddial" aria-label="Neue Gerichte"><svg viewBox="0 0 100 100"><defs><radialGradient id="ddg" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#efe6d6"/><stop offset="1" stop-color="#cbb894"/></radialGradient></defs>
       <g class="qrot"><circle cx="50" cy="50" r="46" fill="#b8892d"/><g fill="#d6a74a"><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(0 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(20 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(40 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(60 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(80 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(100 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(120 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(140 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(160 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(180 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(200 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(220 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(240 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(260 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(280 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(300 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(320 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(340 50 50)"/></g>
       <circle cx="50" cy="50" r="38" fill="url(#ddg)" stroke="#fff" stroke-width="1.5"/><circle cx="50" cy="20" r="4" fill="#2f5d50"/>
-      <path d="M36 52a14 14 0 1 0 4-10" fill="none" stroke="#2f5d50" stroke-width="5" stroke-linecap="round"/><path d="M33 36l7 6.5-9 2.5z" fill="#2f5d50"/></g></svg></button></div>
+      <path d="M36 52a14 14 0 1 0 4-10" fill="none" stroke="#2f5d50" stroke-width="5" stroke-linecap="round"/><path d="M33 36l7 6.5-9 2.5z" fill="#2f5d50"/></g></svg></button><button class="penb" id="shopopen" aria-label="Einkaufszettel schreiben"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><b>Schreiben</b></button></span></h2>
+      <div class="dishwrap"><ul class="dishes" id="dishes"></ul></div>
       <div class="ok" id="okcard" aria-live="polite"></div>
     </section>
     <section class="card paint">
@@ -604,7 +635,7 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='73';
+const BUILD='74';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -757,7 +788,7 @@ const spShow=()=>{const el=sp.on?Math.min(sp.dur,sp.pos+Date.now()-sp.t):sp.pos;
 const spIcon=()=>{$('play').setAttribute('aria-label',sp.on?'Pause':'Abspielen');$('pi').innerHTML=sp.on?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M7 4v16l13-8z"/>';};
 const spOff=(msg,con)=>{$('sptitle').textContent=msg;$('spart').innerHTML='&nbsp;';$('spdev').textContent='';$('spcov').style.backgroundImage='';
   document.querySelector('.sp').classList.add('off');$('spcon').hidden=!con;$('spctl').hidden=!!con;sp={on:false,pos:0,dur:0,t:0,id:null};spIcon();spShow();};
-async function spPoll(){clearTimeout(spT);let next=10000;
+async function spPoll(){clearTimeout(spT);if(getComputedStyle(document.querySelector('.sp')).display==='none')return;let next=10000;
   try{const p=await spApi('/me/player?additional_types=episode');
     if(!p||!p.item){spOff('Gerade läuft nichts',false);}
     else{const it=p.item;document.querySelector('.sp').classList.remove('off');$('spcon').hidden=true;$('spctl').hidden=false;
@@ -1042,11 +1073,11 @@ const XMAS=[
 ["Markt und Straßen stehn verlassen, still erleuchtet jedes Haus.","Joseph von Eichendorff"]
 ];
 
-  const FONTS=[['Playfair Display','italic 600'],['Lora','italic 500'],['Cormorant Garamond','italic 600'],['Caveat','600'],['Dancing Script','600'],['Merriweather','italic 400'],['Abril Fatface','400'],['Josefin Sans','300'],['Satisfy','400'],['Amatic SC','700']];
+  const FONTS=[['Playfair Display','italic 800'],['Lora','italic 700'],['Alfa Slab One','400'],['Caveat','700'],['Dancing Script','700'],['Merriweather','italic 900'],['Abril Fatface','400'],['Josefin Sans','700'],['Pacifico','400'],['Bebas Neue','400']];
   const ar=ls.get('flurcamar');if(ar)document.querySelector('.cam').style.aspectRatio=ar;
   const box=$('qbox'),t=$('qtext'),au=$('qauth');let cur=-1,fi=0,list=QUOTES;
   const fits=()=>box.scrollHeight<=box.clientHeight+1&&box.scrollWidth<=box.clientWidth+1;
-  const fit=()=>{if(!box.clientHeight)return;const u=parseFloat(getComputedStyle(document.querySelector('.quote h2')).fontSize)/2.2||8;let lo=8,hi=Math.min(8.5*u,box.clientHeight*.62);
+  const fit=()=>{if(!box.clientHeight)return;const u=parseFloat(getComputedStyle(document.querySelector('.quote h2')).fontSize)/2.2||8;let lo=8,hi=Math.min(13*u,box.clientHeight*.75);
     for(let k=0;k<16;k++){const m=(lo+hi)/2;t.style.fontSize=m+'px';if(fits())lo=m;else hi=m;}t.style.fontSize=lo+'px';};
   const render=(i,f)=>{const [txt,a]=list[i];const [fam,st]=FONTS[f];
     t.style.font=st+' 20px "'+fam+'",Georgia,serif';t.textContent=txt;au.textContent=a||'';au.hidden=!a;
@@ -1126,6 +1157,15 @@ const XMAS=[
       $('okcard').textContent='✓ Zutaten für '+cur[1]+' eingetragen';setTimeout(()=>{$('okcard').textContent='';},10000);loadCal();setTimeout(close,1200);})
       .catch(()=>{$('dishok').textContent='Hat nicht geklappt – bitte nochmal tippen';$('dishadd').disabled=false;});});
 })();
+
+// Neues Raster: Kamera oben rechts im echten Format, untere Reihe nimmt den Rest
+(()=>{const scr=document.querySelector('.screen'),cam=document.querySelector('.cam');
+  const lay=()=>{const ar=(ls.get('flurcamar')||'16/9').split('/').map(Number);if(!ar[0]||!ar[1])return;
+    const u=parseFloat(getComputedStyle(document.querySelector('h2')).fontSize)/2.2||8;
+    const cs=getComputedStyle(scr),padT=parseFloat(cs.paddingTop),padB=parseFloat(cs.paddingBottom),gap=parseFloat(cs.rowGap)||2.2*u;
+    const w=cam.getBoundingClientRect().width;if(!w)return;
+    let b=scr.clientHeight-padT-padB-gap-w*ar[1]/ar[0];b=Math.max(22*u,Math.min(42*u,b));scr.style.setProperty('--brow',b+'px');};
+  lay();addEventListener('resize',()=>setTimeout(lay,120));new MutationObserver(lay).observe(cam,{attributes:true,attributeFilter:['style']});setTimeout(lay,800);})();
 
 // Spotify: Wiedergabe auf ein anderes Gerät übertragen
 (()=>{const M=document.getElementById('devmodal'),L=document.getElementById('devlist');
