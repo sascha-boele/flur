@@ -434,7 +434,7 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
 .quote{grid-area:quote!important;min-height:0!important}
 .cal{grid-area:cal!important}
 .sp{display:none!important}
-.np{display:grid!important;grid-area:np;grid-template-columns:minmax(0,.62fr) minmax(0,1.38fr);gap:calc(2.2*var(--u));min-height:0}
+.np{display:grid!important;grid-area:np;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(2.2*var(--u));min-height:0}
 .np .paint{order:-1}
 .np .card{min-height:0;grid-area:auto!important}
 .radar{grid-template-rows:minmax(0,1fr) auto auto calc(10.5*var(--u))!important}
@@ -456,6 +456,10 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
 #qtext{line-height:1.08;color:var(--ink)}
 #qauth{font:700 normal calc(2.6*var(--u)) "Red Hat Display"!important;margin-top:calc(.8*var(--u))}
 .quote .qdial{width:calc(8*var(--u));height:calc(8*var(--u))}
+
+/* Notizen-Vorschau zeigt die ganze Zeichnung verkleinert */
+.np .paint .shopbtn.hasimg{background-color:#fff!important;background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;padding:0!important;height:100%}
+.np .paint{grid-template-rows:auto minmax(0,1fr)}
 </style>
 </head>
 <body>
@@ -635,7 +639,7 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='74';
+const BUILD='75';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
