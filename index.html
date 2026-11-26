@@ -237,7 +237,7 @@ button:focus-visible,input:focus-visible{outline:calc(.5*var(--u)) solid var(--y
 #ptext:empty{display:none}
 /* Querformat: drei Spalten, gleiche Elementgröße wie hochkant */
 @media all{ /* nur noch Querformat */
-  :root{--u:calc(min(100vw/1.6667,100vh)/100)}
+  :root{--u:calc(min(100vw/1.6667,100vh)/100);--tw:calc(25*var(--u))}
   .screen{width:min(100vw,calc(100vh*1.6667));aspect-ratio:1.6667;grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,.8fr);
     grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top cam cal" "radar cam cal" "paint sp notes"}
   .two{display:contents}
@@ -427,7 +427,7 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
 .dchips button.off{background:var(--field);color:var(--mute);text-decoration:line-through}
 
 /* === Neues Layout (26.11.): Kamera groß oben rechts, unten Notizen+Einkauf | Kalender | Spruch === */
-.screen{grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr) minmax(0,1.5fr)!important;grid-template-rows:auto minmax(0,1fr) var(--brow,calc(27*var(--u)))!important;
+.screen{grid-template-columns:calc(2*var(--tw) + 2.2*var(--u)) var(--tw) minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr) var(--brow,calc(27*var(--u)))!important;
   grid-template-areas:"top cam cam" "radar cam cam" "np cal quote"!important}
 .mid{display:contents!important}
 .mid .cam,.cam{grid-area:cam!important;aspect-ratio:auto!important;max-height:none!important;min-height:0!important;width:auto!important}
@@ -463,6 +463,46 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
 /* Notizen-Vorschau zeigt die ganze Zeichnung verkleinert */
 .np .paint .shopbtn.hasimg{background-color:#fff!important;background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;padding:0!important;height:100%}
 .np .paint{grid-template-rows:auto minmax(0,1fr)}
+
+/* Kalender-Kachel kompakt + große Monatsansicht */
+.cal{cursor:pointer}
+.cal h2{font-size:calc(2*var(--u))}
+.cal .advent{font-size:calc(1.5*var(--u))!important}
+.cal #kw{display:none}
+.cal .plus{width:calc(4.6*var(--u));height:calc(4.6*var(--u));min-width:calc(4.6*var(--u));font-size:calc(3*var(--u))}
+.cal li button{grid-template-columns:1fr!important;font-size:calc(1.9*var(--u))!important;gap:0!important}
+.cal li time{font-size:calc(1.6*var(--u))!important}
+.cal li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal .day{font-size:calc(1.6*var(--u))!important;margin-top:calc(.8*var(--u))!important}
+.mdlg{width:calc(152*var(--u));height:calc(90*var(--u));max-width:96%;max-height:96%;box-sizing:border-box;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:calc(1.2*var(--u));padding:calc(2.6*var(--u))}
+.mhead{display:flex;align-items:center;gap:calc(1.6*var(--u))}
+.mhead h3{font-size:calc(4.2*var(--u));min-width:calc(42*var(--u));text-align:center}
+.mnav,.mtoday{all:unset;cursor:pointer;display:grid;place-items:center;height:calc(6*var(--u));min-width:calc(6*var(--u));border-radius:calc(3*var(--u));background:var(--field);font:700 calc(3.6*var(--u)) "Red Hat Display";color:var(--ink)}
+.mtoday{font-size:calc(2.2*var(--u));padding:0 calc(2.4*var(--u))}
+.msum{margin-left:auto;font:600 calc(2.1*var(--u)) "Red Hat Text";color:var(--mute);text-align:right}
+.msum b{color:var(--t)}
+.mwd{display:grid;grid-template-columns:repeat(7,1fr);gap:calc(.6*var(--u));font:700 calc(1.9*var(--u)) "Red Hat Text";color:var(--mute);text-align:center}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:calc(.6*var(--u));min-height:0}
+.md{background:var(--field);border-radius:calc(1.2*var(--u));padding:calc(.6*var(--u)) calc(.7*var(--u));overflow:hidden;display:flex;flex-direction:column;gap:calc(.35*var(--u));cursor:pointer;min-height:0}
+.md>b{font:800 calc(2.2*var(--u)) "Red Hat Display";color:var(--ink)}
+.md.we>b{color:var(--r)}
+.md.out{opacity:.35}
+.md.past{opacity:.6}
+.md.today{box-shadow:inset 0 0 0 calc(.35*var(--u)) var(--t);background:rgba(47,93,80,.08)}
+.md.today>b{color:var(--t)}
+.me{font:600 calc(1.5*var(--u))/1.25 "Red Hat Text";background:rgba(47,93,80,.13);color:var(--ink);border-radius:calc(.6*var(--u));padding:calc(.15*var(--u)) calc(.6*var(--u));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.me i{font-style:normal;color:var(--t);font-weight:700;margin-right:calc(.4*var(--u))}
+.me.all{background:rgba(184,137,45,.18)}
+.mmore{font:600 calc(1.4*var(--u)) "Red Hat Text";color:var(--mute)}
+.mhint{margin-right:auto;font:500 calc(1.9*var(--u)) "Red Hat Text";color:var(--mute);align-self:center}
+html.dark .md{background:rgba(255,255,255,.05)}
+
+/* Öffnungslinks in den Überschriften */
+.hlink{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:calc(.6*var(--u));color:inherit;font:inherit;padding:calc(.3*var(--u)) calc(.8*var(--u)) calc(.3*var(--u)) 0;border-radius:calc(1*var(--u))}
+.hlink i{font-style:normal;color:var(--t);font-weight:800;font-size:1.3em;line-height:.8}
+.hlink em{font-style:normal;background:var(--y);color:#fff;border-radius:calc(1.2*var(--u));padding:0 calc(.8*var(--u));font-size:.85em;font-weight:700}
+.hlink em:empty{display:none}
+.hlink:active{background:rgba(255,255,255,.6)}
 </style>
 </head>
 <body>
@@ -530,14 +570,14 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
       <button class="spcon" id="spcon" hidden>Spotify verbinden</button>
     </section>
     <section class="card cal">
-      <h2><span style="display:flex;flex-direction:column;gap:calc(.4*var(--u));min-width:0;flex:1">Familienkalender<span class="advent" id="advent"></span></span> <span style="display:flex;flex:none;gap:calc(1.6*var(--u));align-items:center"><span id="kw" style="white-space:nowrap">KW 48</span><button class="plus" id="plus" aria-label="Termin hinzufügen">+</button></span></h2>
+      <h2><span style="display:flex;flex-direction:column;gap:calc(.4*var(--u));min-width:0;flex:1"><span class="hlink">Kalender <i>›</i></span><span class="advent" id="advent"></span></span> <span style="display:flex;flex:none;gap:calc(1.6*var(--u));align-items:center"><span id="kw" style="white-space:nowrap">KW 48</span><button class="plus" id="plus" aria-label="Termin hinzufügen">+</button></span></h2>
       <div class="calscroll" id="cal"></div>
     </section>
   </div>
 
   <div class="two np">
     <section class="card notes">
-      <h2>Einkaufszettel </h2>
+      <h2><button type="button" class="hlink" id="shoplink">Einkaufszettel <em id="shopcnt"></em><i>›</i></button></h2>
       <div class="dishwrap"><ul class="dishes" id="dishes"></ul><div class="nbtns"><button class="qdial ddial" id="ddial" aria-label="Neue Gerichte"><svg viewBox="0 0 100 100"><defs><radialGradient id="ddg" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#efe6d6"/><stop offset="1" stop-color="#cbb894"/></radialGradient></defs>
       <g class="qrot"><circle cx="50" cy="50" r="46" fill="#b8892d"/><g fill="#d6a74a"><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(0 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(20 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(40 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(60 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(80 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(100 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(120 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(140 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(160 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(180 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(200 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(220 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(240 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(260 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(280 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(300 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(320 50 50)"/><rect x="47.5" y="2" width="5" height="9" rx="2" transform="rotate(340 50 50)"/></g>
       <circle cx="50" cy="50" r="38" fill="url(#ddg)" stroke="#fff" stroke-width="1.5"/><circle cx="50" cy="20" r="4" fill="#2f5d50"/>
@@ -545,11 +585,20 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
       <div class="ok" id="okcard" aria-live="polite"></div>
     </section>
     <section class="card paint">
-      <h2>Notizen <span id="pdate"></span></h2>
+      <h2><button type="button" class="hlink" id="paintlink">Notizen <i>›</i></button><span id="pdate"></span></h2>
       <button class="shopbtn" id="paintopen"><svg id="painticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M8 11h8M8 15h8M8 19h5"/></svg><span id="ptext"></span></button>
     </section>
   </div>
   
+  <div class="modal" id="monmodal">
+    <div class="dlg mdlg">
+      <div class="mhead"><button type="button" class="mnav" id="mprev" aria-label="Vormonat">‹</button><h3 id="mtitle"></h3><button type="button" class="mnav" id="mnext" aria-label="Nächster Monat">›</button>
+        <button type="button" class="mtoday" id="mtoday">Heute</button><span class="msum" id="msum"></span></div>
+      <div class="mwd"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
+      <div class="mgrid" id="mgrid"></div>
+      <div class="acts"><span class="mhint">Tag antippen = neuer Termin · Termin antippen = bearbeiten</span><button type="button" class="save" id="madd">+ Termin</button><button type="button" id="mx">Schließen</button></div>
+    </div>
+  </div>
   <div class="modal" id="modal">
     <form class="dlg" id="evf">
       <h3 id="evh">Neuer Termin</h3>
@@ -642,7 +691,7 @@ html.dark .dishes button{background:rgba(255,255,255,.06);border-color:rgba(255,
 {
 const $=id=>document.getElementById(id);
 // Selbst-Update: alle 2 Minuten prüfen, ob auf GitHub eine neue Version liegt
-const BUILD='76';
+const BUILD='77';
 setInterval(async()=>{try{const t=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
   const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href);}}catch(e){}},120000);
 const pad=n=>String(n).padStart(2,'0');
@@ -739,7 +788,8 @@ const closeDlg=()=>{$('modal').classList.remove('on');};
 const run=async(p)=>{if(busy)return;busy=true;$('evmsg').textContent='Wird gespeichert …';
   try{await api(p);closeDlg();await loadCal();}catch(e){$('evmsg').textContent='Hat nicht geklappt: '+e.message;}busy=false;};
 $('plus').addEventListener('click',()=>openDlg());
-$('cal').addEventListener('click',ev=>{if(ev.target.closest('button[data-shop]')){openShopList();return;}const b=ev.target.closest('button[data-id]');if(b)openDlg(evs.find(x=>x.id===b.dataset.id));});
+$('cal').addEventListener('click',ev=>{if(ev.target.closest('button[data-shop]')){openShopList();return;}window.openMonth&&window.openMonth();});
+document.querySelector('.cal h2').addEventListener('click',ev=>{if(ev.target.closest('#plus'))return;window.openMonth&&window.openMonth();});
 $('eva').addEventListener('change',syncAll);
 $('evs').addEventListener('change',()=>{const [h,m]=$('evs').value.split(':').map(Number);if($('eve').value<=$('evs').value)$('eve').value=pad(Math.min(23,h+1))+':'+pad(m);});
 $('evx').addEventListener('click',closeDlg);
@@ -1173,6 +1223,46 @@ const XMAS=[
     const w=cam.getBoundingClientRect().width;if(!w)return;
     let b=scr.clientHeight-padT-padB-gap-w*ar[1]/ar[0];b=Math.max(22*u,Math.min(42*u,b));scr.style.setProperty('--brow',b+'px');};
   lay();addEventListener('resize',()=>setTimeout(lay,120));new MutationObserver(lay).observe(cam,{attributes:true,attributeFilter:['style']});setTimeout(lay,800);})();
+
+// Große Monatsansicht des Familienkalenders
+(()=>{const M=$('monmodal'),G=$('mgrid');let ym=null,data=[],load=0;
+  const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const esc=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const gridStart=()=>{const f=new Date(ym[0],ym[1],1);const off=(f.getDay()+6)%7;return new Date(ym[0],ym[1],1-off);};
+  const render=()=>{const st=gridStart(),today=iso(new Date());$('mtitle').textContent=MN[ym[1]]+' '+ym[0];
+    const rows=Math.ceil(((new Date(ym[0],ym[1],1).getDay()+6)%7+new Date(ym[0],ym[1]+1,0).getDate())/7);
+    G.style.gridTemplateRows='repeat('+rows+',minmax(0,1fr))';let h='';let cnt=0,trash=0;
+    for(let k=0;k<rows*7;k++){const d=new Date(st.getFullYear(),st.getMonth(),st.getDate()+k),ds=iso(d);
+      const list=data.filter(e=>e.date<=ds&&(e.endDate||e.date)>=ds).sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+      const inM=d.getMonth()===ym[1];if(inM){cnt+=list.length;trash+=list.filter(e=>/beh(ä|ae)lter|müll|tonne/i.test(e.title)).length;}
+      const cls=['md',inM?'':'out',ds<today?'past':'',ds===today?'today':'',(d.getDay()===0||d.getDay()===6)?'we':''].join(' ');
+      const max=3,items=list.slice(0,max).map(e=>`<span class="me${e.start?'':' all'}" data-id="${esc(e.id)}">${e.start?'<i>'+e.start+'</i>':''}${esc(e.title)}</span>`).join('');
+      h+=`<div class="${cls}" data-d="${ds}"><b>${d.getDate()}</b>${items}${list.length>max?`<span class="mmore">+${list.length-max} weitere</span>`:''}</div>`;}
+    G.innerHTML=h;
+    const fut=data.filter(e=>e.date>=today).sort((a,b)=>(a.date+(a.start||'')).localeCompare(b.date+(b.start||'')))[0];
+    $('msum').innerHTML=`<b>${cnt}</b> Termine im ${MN[ym[1]]}${trash?` · davon <b>${trash}</b>× Müll`:''}${fut?`<br>Nächster: ${esc(fut.title)} am ${fut.date.slice(8,10)}.${fut.date.slice(5,7)}.`:''}`;};
+  const fetchM=async()=>{const my=++load;const st=gridStart();render();
+    try{const j=await api({action:'list',days:43,start:iso(st)});if(my!==load)return;data=(j.events||[]);
+      // ältere Server-Version liefert nur ab heute – dann mit den vorhandenen Terminen ergänzen
+      (evs||[]).forEach(e=>{if(!data.some(x=>x.id===e.id&&x.date===e.date))data.push(e);});render();}
+    catch(e){data=(evs||[]).slice();render();}};
+  window.openMonth=()=>{const n=new Date();ym=[n.getFullYear(),n.getMonth()];data=(evs||[]).slice();M.classList.add('on');fetchM();};
+  $('mprev').addEventListener('click',()=>{ym=ym[1]?[ym[0],ym[1]-1]:[ym[0]-1,11];fetchM();});
+  $('mnext').addEventListener('click',()=>{ym=ym[1]<11?[ym[0],ym[1]+1]:[ym[0]+1,0];fetchM();});
+  $('mtoday').addEventListener('click',()=>{const n=new Date();ym=[n.getFullYear(),n.getMonth()];fetchM();});
+  $('mx').addEventListener('click',()=>M.classList.remove('on'));
+  M.addEventListener('click',e=>{if(e.target===M)M.classList.remove('on');});
+  $('madd').addEventListener('click',()=>openDlg(null));
+  G.addEventListener('click',e=>{const t=e.target.closest('.me');if(t){const ev=data.find(x=>x.id===t.dataset.id);if(ev){openDlg(ev);return;}}
+    const c=e.target.closest('.md');if(c){openDlg(null);$('evd').value=c.dataset.d;}});
+  new MutationObserver(()=>{if(M.classList.contains('on')&&!$('modal').classList.contains('on'))setTimeout(fetchM,900);}).observe($('modal'),{attributes:true,attributeFilter:['class']});
+})();
+
+// Überschriften als Öffnungslinks
+$('shoplink').addEventListener('click',()=>openShopList());
+$('paintlink').addEventListener('click',()=>$('paintopen').click());
+setInterval(()=>{const n=(shopList||[]).length;$('shopcnt').textContent=n?n:'';},2000);
 
 // Spotify: Wiedergabe auf ein anderes Gerät übertragen
 (()=>{const M=document.getElementById('devmodal'),L=document.getElementById('devlist');
